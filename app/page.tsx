@@ -5,7 +5,7 @@ import ToolsCatalog from "@/components/ToolsCatalog";
 
 export const metadata: Metadata = {
   title: "MediaDit | Free Online Image Tools & Background Remover",
-  description: "100% Free, serverless client-side image editor. Remove backgrounds with AI, add draggable text, resize, crop, and convert images instantly in your browser with complete privacy.",
+  description: "Free, serverless client-side image editor. Remove backgrounds with AI, add text, resize, crop, and convert images instantly with complete privacy.",
   keywords: [
     "Free Online Photo Editor",
     "Remove Background Instantly",
