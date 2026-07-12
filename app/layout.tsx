@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MediaDit | Free Online Image Tools & Background Remover",
   description: "100% Free, serverless client-side image editor. Remove backgrounds with AI, add draggable text, resize, crop, and convert images instantly in your browser with complete privacy.",
+  verification: {
+    other: {
+      "msvalidate.01": "A2925BB0F67E06574E6C433863C8EC1F",
+    },
+  },
 };
 
 export default function RootLayout({
