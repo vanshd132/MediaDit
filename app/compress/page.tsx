@@ -331,6 +331,61 @@ export default function CompressPage() {
 
             </div>
           )}
+
+          {/* Informational section for search crawlers and users */}
+          <section className="mt-20 pt-16 border-t border-slate-200/60 dark:border-zinc-800/40 transition-colors">
+            <div className="max-w-4xl mx-auto space-y-10">
+              
+              <div className="text-center space-y-3">
+                <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white">
+                  How does browser-native image compression work?
+                </h2>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                  Unlike conventional size reducers that send your photos to external cloud systems, MediaDit processes files directly inside your browser memory.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                <div className="space-y-2.5">
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                    🔒 100% Client-Side Privacy
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    When you drag and drop a file, it is loaded into a local HTML5 canvas. The quality adjustment slider scales the canvas rendering matrix locally, exporting the result to a compressed Blob on your device. Your files never leave your computer.
+                  </p>
+                </div>
+
+                <div className="space-y-2.5">
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                    ⚡ WebP & JPEG Format Optimization
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    WebP and JPEG are lossy formats, meaning they achieve high compression ratios by discarding visual noise that the human eye cannot detect. Dragging the quality slider to 70%–80% can shrink file sizes by up to 80% with zero visible loss in image sharpness.
+                  </p>
+                </div>
+
+                <div className="space-y-2.5">
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                    💡 Lossless PNG Notice
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    PNG files use lossless compression, which preserves pixel definitions perfectly but results in larger files. Standard quality sliders cannot compress PNGs. If you upload a PNG, convert it to WebP or JPEG inside the format panel to drastically reduce its size.
+                  </p>
+                </div>
+
+                <div className="space-y-2.5">
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                    🚀 Faster Page Speeds
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Large photos bloat page load times and trigger mobile bandwidth lag. Compressing images under 500 KB before putting them on websites or emails improves your site's SEO scores, reduces user bounce rates, and lowers loading times.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
         </div>
       </main>
     </>
