@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, Type, RefreshCw, Crop } from "lucide-react";
+import { Sparkles, Type, RefreshCw, Crop, Percent } from "lucide-react";
 
 const iconMap = {
   sparkles: Sparkles,
   type: Type,
   refresh: RefreshCw,
   crop: Crop,
+  percent: Percent,
 };
 
 interface ToolCardProps {

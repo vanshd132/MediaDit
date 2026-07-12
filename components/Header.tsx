@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sparkles, Type, RefreshCw, Crop, ShieldCheck, Sun, Moon, Grid } from "lucide-react";
+import { Sparkles, Type, RefreshCw, Crop, ShieldCheck, Sun, Moon, Grid, Percent } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
@@ -31,6 +31,7 @@ export default function Header() {
     { href: "/add-text", label: "Add Text", icon: Type },
     { href: "/convert", label: "Convert", icon: RefreshCw },
     { href: "/resize", label: "Resize & Crop", icon: Crop },
+    { href: "/compress", label: "Compress", icon: Percent },
   ];
 
   return (

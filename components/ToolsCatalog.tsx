@@ -43,6 +43,15 @@ export default function ToolsCatalog() {
       badgeType: "offline" as const,
       colorTheme: "amber" as const,
     },
+    {
+      title: "Compress Image",
+      description: "Reduce image file sizes instantly without losing visible quality. 100% free, private, and offline.",
+      href: "/compress",
+      icon: "percent" as const,
+      badge: "Size Reducer",
+      badgeType: "new" as const,
+      colorTheme: "emerald" as const,
+    },
   ];
 
   const tabs = [
@@ -80,7 +89,7 @@ export default function ToolsCatalog() {
       </div>
 
       {/* Tools Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 w-full">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 w-full">
         {filteredTools.map((tool) => (
           <ToolCard
             key={tool.href}
