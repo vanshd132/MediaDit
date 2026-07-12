@@ -51,7 +51,7 @@ export default function Home() {
 
       <Header />
 
-      <main className="flex-1 bg-background transition-colors flex flex-col justify-center">
+      <main className="flex-1 bg-background transition-colors flex flex-col justify-start">
         
         {/* Compact Hero Section */}
         <section className="relative overflow-hidden pt-10 pb-8 md:pt-14 md:pb-10">
@@ -70,6 +70,47 @@ export default function Home() {
         <section className="pb-16 pt-4 transition-colors">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <ToolsCatalog />
+          </div>
+        </section>
+
+        {/* Informational Section */}
+        <section className="pt-24 pb-20 border-t border-slate-200/60 dark:border-zinc-800/40 transition-colors">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white text-center mb-10">
+              Why run image tools locally?
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Privacy */}
+              <div className="space-y-3 text-left">
+                <h3 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                  <span>🔒</span> Zero Uploads, Total Privacy
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Every time you upload a photo to standard online editors, your private images are sent to third-party cloud servers. MediaDit runs completely inside your browser memory. Your images never leave your computer.
+                </p>
+              </div>
+
+              {/* Local AI */}
+              <div className="space-y-3 text-left">
+                <h3 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                  <span>⚡</span> Tiny, High-Speed AI Models
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Our background remover operates entirely on your device using a compressed, highly optimized 50MB neural network. Once cached on first run, it erases backgrounds instantly—even when you are completely offline.
+                </p>
+              </div>
+
+              {/* No Signups */}
+              <div className="space-y-3 text-left">
+                <h3 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                  <span>✨</span> No Signups, No Paywalls
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                  We believe simple tasks shouldn't require creating accounts, giving away your email, or subscribing to paywalls. There are no limits, no watermarks, and no signups required. Ever.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
 

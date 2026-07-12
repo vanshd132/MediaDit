@@ -546,7 +546,7 @@ export default function RemoveBackgroundPage() {
                   <RefreshCw className="h-8 w-8 text-indigo-500 animate-spin" />
                   <p className="text-sm font-semibold text-slate-800 dark:text-white">{loadingStep}</p>
                   <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
-                    First execution downloads the background remover model (~80MB). Subsequent operations are instant.
+                    First execution downloads the background remover model (~50MB). Subsequent operations are instant.
                   </p>
                 </div>
               )}
