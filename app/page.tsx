@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import Header from "@/components/Header";
 import ToolsCatalog from "@/components/ToolsCatalog";
-import { Lock, Award, ShieldCheck, Zap } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "MediaDit | Free Online Image Tools & Background Remover",
@@ -52,75 +51,34 @@ export default function Home() {
 
       <Header />
 
-      <main className="flex-1 grid-bg transition-colors">
+      <main className="flex-1 bg-background transition-colors flex flex-col justify-center">
         
-        {/* Hero Section */}
-        <section className="relative overflow-hidden pt-8 pb-6 md:pt-12 md:pb-8">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
-            
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider">
-              <Zap className="h-3.5 w-3.5" />
-              100% Free & Offline-Native Tools
-            </div>
-            
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-4xl md:text-5xl max-w-4xl mx-auto leading-tight">
-              Free Online Image Tools & Background Remover
+        {/* Compact Hero Section */}
+        <section className="relative overflow-hidden pt-10 pb-8 md:pt-14 md:pb-10">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-3">
+            <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white sm:text-5xl leading-tight">
+              Image editing, simplified.
             </h1>
 
-            <p className="max-w-3xl mx-auto text-sm sm:text-base md:text-lg text-slate-650 dark:text-slate-400 leading-relaxed font-medium">
-              Simple, quick, and secure image utilities. All operations run locally inside your browser. No files are ever uploaded to a server.
+            <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+              Free, browser-native tools to remove backgrounds, write text overlays, crop, resize, and convert images. <strong>No signups, no file uploads, 100% private.</strong>
             </p>
           </div>
         </section>
 
-        {/* Tools Section */}
-        <section className="py-12 border-t border-slate-200 dark:border-zinc-800/60 bg-white/40 dark:bg-slate-950/20 transition-colors">
+        {/* Tools Grid Section */}
+        <section className="pb-16 pt-4 transition-colors">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <ToolsCatalog />
           </div>
         </section>
 
-        {/* Value Propositions */}
-        <section className="py-16 border-t border-slate-200 dark:border-zinc-800/60 transition-colors">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="text-center text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-12">
-              Why Use MediaDit?
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              {/* Privacy */}
-              <div className="flex flex-col items-center text-center p-6 bg-card border border-border rounded-2xl shadow-sm">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 mb-4">
-                  <Lock className="h-6 w-6" />
-                </div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-white mb-2">Absolute Privacy</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  We do not upload your images. Everything is processed locally in memory using WebAssembly and Javascript.
-                </p>
-              </div>
-
-              {/* No Limits */}
-              <div className="flex flex-col items-center text-center p-6 bg-card border border-border rounded-2xl shadow-sm">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mb-4">
-                  <Award className="h-6 w-6" />
-                </div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-white mb-2">No Restrictions</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Export high-resolution images with no log-ins, no subscription fees, and no watermarks added to your files.
-                </p>
-              </div>
-
-              {/* Secure */}
-              <div className="flex flex-col items-center text-center p-6 bg-card border border-border rounded-2xl shadow-sm">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 mb-4">
-                  <ShieldCheck className="h-6 w-6" />
-                </div>
-                <h3 className="text-base font-bold text-slate-800 dark:text-white mb-2">Browser Native Speed</h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Our utilities continue to work offline without network delay, resolving all calculations directly inside your browser.
-                </p>
-              </div>
-            </div>
+        {/* Flat Minimalist Privacy Notice */}
+        <section className="pb-12 border-t border-slate-200/60 dark:border-zinc-800/40 pt-8 transition-colors">
+          <div className="mx-auto max-w-3xl px-4 text-center">
+            <p className="text-xs text-slate-500 dark:text-slate-500 font-semibold flex items-center justify-center gap-1.5">
+              <span>🔒</span> All operations run locally inside your browser memory. Your images never leave your device.
+            </p>
           </div>
         </section>
       </main>
