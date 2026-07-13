@@ -242,10 +242,64 @@ export default function ConvertPage() {
                     {isConverting ? "Converting..." : "Convert & Download"}
                   </button>
                 </div>
-
               </div>
             </div>
           )}
+
+          {/* Informational section for search crawlers and users */}
+          <section className="mt-20 pt-16 border-t border-slate-200/60 dark:border-zinc-800/40 transition-colors">
+            <div className="max-w-4xl mx-auto space-y-10">
+              
+              <div className="text-center space-y-3">
+                <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white">
+                  How does browser-native image conversion work?
+                </h2>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                  MediaDit converts image formats entirely client-side, giving you high-speed exports with absolute privacy.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                <div className="space-y-2.5">
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                    🔒 Secure & Serverless
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    When you convert images from PNG to WebP or JPEG to PNG, your photos are processed inside browser memory. Because we don't upload files to remote servers, your private documents never leave your computer.
+                  </p>
+                </div>
+
+                <div className="space-y-2.5">
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                    🌈 Format Comparison (WebP, PNG, JPEG)
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Choose the target format that fits your needs. Use <strong>PNG</strong> for lossless transparent graphics, <strong>JPEG</strong> for standard photo sharing with custom compression sliders, and <strong>WebP</strong> for highly compressed web assets.
+                  </p>
+                </div>
+
+                <div className="space-y-2.5">
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                    🎨 Lossless Transparency Layers
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    When converting images that have transparent backgrounds (like graphics or background-removed photos) into target formats, make sure to use <strong>PNG</strong> or <strong>WebP</strong> to preserve the transparent layers. Converting transparent images to JPEG will fill the transparency with a solid white background.
+                  </p>
+                </div>
+
+                <div className="space-y-2.5">
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">
+                    ⚡ High-Speed Canvas Exports
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                    Our conversion process uses native HTML5 canvas rasterization. By drawing pixels and converting the canvas context directly inside your GPU, we can instantly export images in under a second.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
         </div>
       </main>
     </>
