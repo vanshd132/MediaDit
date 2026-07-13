@@ -5,6 +5,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Dropzone from "@/components/Dropzone";
 import { Type, Trash2, Download, Plus, ArrowLeft, ShieldCheck, AlignLeft, Settings } from "lucide-react";
+import { useLanguage } from "@/components/LanguageContext";
 
 interface TextOverlay {
   id: string;
@@ -19,6 +20,7 @@ interface TextOverlay {
 export default function AddTextPage() {
   const [image, setImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { t } = useLanguage();
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
   const [activeTextId, setActiveTextId] = useState<string | null>(null);
   const [downloadFormat, setDownloadFormat] = useState<"png" | "jpeg">("png");
@@ -395,11 +397,11 @@ export default function AddTextPage() {
             className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Tools
+            {t.allTools}
           </Link>
           <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-full">
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
-            <span>Runs locally, offline-safe</span>
+            <span>{t.privacyBadge}</span>
           </div>
         </div>
 
@@ -407,10 +409,10 @@ export default function AddTextPage() {
         <div className="text-center md:text-left mb-8">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-800 dark:text-white flex items-center justify-center md:justify-start gap-2">
             <Type className="h-7 w-7 text-indigo-500" />
-            Add Text to Image
+            {t.cardAddTextTitle}
           </h1>
           <p className="mt-2 text-slate-600 dark:text-slate-400 text-sm md:text-base max-w-2xl font-medium">
-            Style and position customizable text overlays over your pictures. Drag text on canvas or double-click to edit inline.
+            {t.cardAddTextDesc}
           </p>
         </div>
 
@@ -419,8 +421,8 @@ export default function AddTextPage() {
           <div className="glass-panel rounded-2xl p-6 md:p-8 min-h-[400px] flex flex-col items-center justify-center transition-colors">
             <Dropzone
               onFileSelected={handleFileSelected}
-              label="Drag & drop image to add text overlays"
-              description="Supports PNG, JPEG, WEBP up to 15MB"
+              label={t.dropzoneTitle}
+              description={t.dropzoneDesc}
             />
           </div>
         ) : (
@@ -437,10 +439,10 @@ export default function AddTextPage() {
 
                 <button
                   onClick={addTextOverlay}
-                  className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 bg-indigo-600 hover:bg-indigo-750 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white rounded-lg text-sm font-semibold transition-all active:scale-95 shadow-sm"
+                  className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 bg-indigo-600 hover:bg-indigo-750 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white rounded-lg text-sm font-semibold transition-all active:scale-95 shadow-sm cursor-pointer"
                 >
                   <Plus className="h-4 w-4" />
-                  Add Text Overlay
+                  {t.addTextBtn}
                 </button>
 
                 {textOverlays.length === 0 ? (
@@ -471,12 +473,12 @@ export default function AddTextPage() {
                 <div className="glass-panel p-5 rounded-2xl border border-border space-y-4 animate-in fade-in duration-300">
                   <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-zinc-800/80 pb-2">
                     <Settings className="h-4 w-4" />
-                    Customize Layer
+                    {t.settingsTitle}
                   </h2>
 
                   {/* Input Box */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Text Content</label>
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t.addTextBtn}</label>
                     <input
                       type="text"
                       value={activeContent}
@@ -491,7 +493,7 @@ export default function AddTextPage() {
 
                   {/* Fonts family selection */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Font Style</label>
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t.fontFamily}</label>
                     <select
                       value={activeFont}
                       onChange={(e) => {
@@ -511,7 +513,7 @@ export default function AddTextPage() {
                   {/* Fonts size slider */}
                   <div className="space-y-1">
                     <div className="flex justify-between items-center">
-                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Font Size</label>
+                      <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t.fontSize}</label>
                       <span className="text-xs text-indigo-600 dark:text-indigo-400 font-mono font-bold">{activeSize}px</span>
                     </div>
                     <input
@@ -530,7 +532,7 @@ export default function AddTextPage() {
 
                   {/* Colors Grid Selection */}
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">Color</label>
+                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">{t.textColor}</label>
                     <div className="flex flex-wrap gap-1.5">
                       {colors.map((c) => (
                         <button
@@ -561,7 +563,7 @@ export default function AddTextPage() {
                   {/* Delete layer */}
                   <button
                     onClick={handleDeleteActive}
-                    className="w-full inline-flex items-center justify-center gap-1.5 py-2 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-semibold transition-all active:scale-95 mt-2"
+                    className="w-full inline-flex items-center justify-center gap-1.5 py-2 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 text-rose-600 dark:text-rose-400 rounded-lg text-xs font-semibold transition-all active:scale-95 mt-2 cursor-pointer"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     Delete Active Layer
@@ -607,10 +609,10 @@ export default function AddTextPage() {
               <div className="flex flex-wrap items-center justify-between gap-4 p-4 border border-border rounded-2xl bg-card shadow-sm">
                 <button
                   onClick={handleReset}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-850 text-slate-700 dark:text-white rounded-lg text-sm font-semibold transition-all active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-850 text-slate-700 dark:text-white rounded-lg text-sm font-semibold transition-all active:scale-95 cursor-pointer"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Reset Image
+                  {t.resetBtn}
                 </button>
 
                 <div className="flex items-center gap-3">
@@ -618,20 +620,20 @@ export default function AddTextPage() {
                   <div className="flex bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-1 rounded-lg">
                     <button
                       onClick={() => setDownloadFormat("png")}
-                      className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
+                      className={`px-3 py-1 rounded text-xs font-bold transition-colors cursor-pointer ${
                         downloadFormat === "png"
                           ? "bg-indigo-600 dark:bg-indigo-500 text-white shadow-sm"
-                          : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                          : "text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white"
                       }`}
                     >
                       PNG
                     </button>
                     <button
                       onClick={() => setDownloadFormat("jpeg")}
-                      className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
+                      className={`px-3 py-1 rounded text-xs font-bold transition-colors cursor-pointer ${
                         downloadFormat === "jpeg"
                           ? "bg-indigo-600 dark:bg-indigo-500 text-white shadow-sm"
-                          : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                          : "text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white"
                       }`}
                     >
                       JPEG
@@ -640,10 +642,10 @@ export default function AddTextPage() {
 
                   <button
                     onClick={handleDownload}
-                    className="inline-flex items-center gap-2 px-6 py-2 bg-indigo-600 hover:bg-indigo-750 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white rounded-lg text-sm font-bold transition-all active:scale-95 shadow-md shadow-indigo-600/10"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-750 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white rounded-lg text-sm font-bold transition-all active:scale-95 shadow-md shadow-indigo-600/10 cursor-pointer"
                   >
                     <Download className="h-4 w-4" />
-                    Download
+                    {t.downloadBtn}
                   </button>
                 </div>
               </div>

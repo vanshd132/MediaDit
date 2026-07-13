@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Dropzone from "@/components/Dropzone";
-import { Download, RefreshCw, ArrowLeft, ShieldCheck, FileSpreadsheet, Percent, Info } from "lucide-react";
+import { Download, RefreshCw, ArrowLeft, ShieldCheck, Percent, Info } from "lucide-react";
+import { useLanguage } from "@/components/LanguageContext";
 
 export default function CompressPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -18,6 +19,7 @@ export default function CompressPage() {
   const [isCompressing, setIsCompressing] = useState<boolean>(false);
   
   const compressionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { t } = useLanguage();
 
   // Read upload file
   const handleFileAccepted = (file: File) => {
@@ -164,16 +166,16 @@ export default function CompressPage() {
               <div>
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-full w-fit mb-1.5">
                   <Percent className="h-3.5 w-3.5 text-indigo-500" />
-                  <span>Compress Image</span>
+                  <span>{t.compress}</span>
                 </div>
                 <h1 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white">
-                  Reduce File Size
+                  {t.cardCompressTitle}
                 </h1>
               </div>
             </div>
             <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 w-fit self-center md:self-auto">
               <ShieldCheck className="h-4 w-4" />
-              <span>100% Offline-Native Privacy</span>
+              <span>{t.privacyBadge}</span>
             </div>
           </div>
 
@@ -188,7 +190,7 @@ export default function CompressPage() {
               <div className="lg:col-span-3 flex flex-col justify-between border border-border rounded-2xl bg-card p-6 min-h-[400px]">
                 <div>
                   <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider border-b border-slate-100 dark:border-zinc-800/80 pb-2 mb-4">
-                    Image Preview
+                    {t.previewTitle}
                   </h2>
                   <div className="relative max-h-[450px] max-w-full rounded-lg overflow-hidden border border-border flex justify-center bg-slate-50 dark:bg-zinc-950/40 p-4">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -210,13 +212,13 @@ export default function CompressPage() {
                 <div className="border border-border rounded-2xl bg-card p-6 flex flex-col justify-between h-full">
                   <div className="space-y-6">
                     <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider border-b border-slate-100 dark:border-zinc-800/80 pb-2">
-                      Compression Settings
+                      {t.compressSettings}
                     </h2>
 
                     {/* Format selector */}
                     <div className="space-y-2">
                       <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                        Output Format
+                        {t.outputFormat}
                       </label>
                       <div className="grid grid-cols-3 gap-2">
                         {(["original", "webp", "jpeg"] as const).map((format) => (
@@ -229,7 +231,7 @@ export default function CompressPage() {
                                 : "bg-slate-50 dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-850"
                             }`}
                           >
-                            {format === "original" ? "Original" : format.toUpperCase()}
+                            {format === "original" ? t.original : format.toUpperCase()}
                           </button>
                         ))}
                       </div>
@@ -239,7 +241,7 @@ export default function CompressPage() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Compression Quality
+                          {t.compressQuality}
                         </label>
                         <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
                           {isPngOutput ? "Lossless" : `${quality}%`}
@@ -257,9 +259,7 @@ export default function CompressPage() {
                       {isPngOutput && (
                         <div className="flex gap-1.5 p-3 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-lg text-xs leading-relaxed">
                           <Info className="h-4 w-4 shrink-0 mt-0.5" />
-                          <span>
-                            PNG is a lossless format and does not compress with quality sliders. Convert to <strong>WEBP</strong> or <strong>JPEG</strong> to reduce file size.
-                          </span>
+                          <span>{t.losslessPngNotice}</span>
                         </div>
                       )}
                     </div>
@@ -268,13 +268,13 @@ export default function CompressPage() {
                     <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-zinc-800/80">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 bg-slate-50 dark:bg-zinc-900 rounded-xl border border-slate-100 dark:border-zinc-800">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">Original</span>
+                          <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{t.original}</span>
                           <p className="text-base font-bold text-slate-700 dark:text-slate-300 mt-0.5">
                             {formatSize(imageFile.size)}
                           </p>
                         </div>
                         <div className="p-3 bg-indigo-500/5 dark:bg-indigo-950/20 rounded-xl border border-indigo-500/10">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">Compressed</span>
+                          <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">{t.compressed}</span>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             {isCompressing ? (
                               <RefreshCw className="h-4 w-4 text-indigo-500 animate-spin" />
@@ -291,9 +291,9 @@ export default function CompressPage() {
                       {compressedSize && !isCompressing && (
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
-                            <span>File Savings Ratio</span>
+                            <span>{t.savingsRatio}</span>
                             <span className={hasSavings ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500"}>
-                              {hasSavings ? `Saved ${savingsPct}%` : "No Savings"}
+                              {hasSavings ? `${t.saved} ${savingsPct}%` : t.noSavings}
                             </span>
                           </div>
                           <div className="h-2 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -317,13 +317,13 @@ export default function CompressPage() {
                       className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-750 text-white rounded-lg text-sm font-semibold transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                     >
                       <Download className="h-4 w-4" />
-                      <span>Download Compressed Image</span>
+                      <span>{t.downloadCompressed}</span>
                     </button>
                     <button
                       onClick={handleReset}
                       className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-850 text-slate-700 dark:text-white rounded-lg text-sm font-semibold transition-all active:scale-95 cursor-pointer"
                     >
-                      <span>Upload Another Image</span>
+                      <span>{t.uploadAnother}</span>
                     </button>
                   </div>
                 </div>
@@ -338,47 +338,47 @@ export default function CompressPage() {
               
               <div className="text-center space-y-3">
                 <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white">
-                  How does browser-native image compression work?
+                  {t.compressInfoTitle}
                 </h2>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                  Unlike conventional size reducers that send your photos to external cloud systems, MediaDit processes files directly inside your browser memory.
+                  {t.compressInfoSub}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                 <div className="space-y-2.5">
                   <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                    🔒 100% Client-Side Privacy
+                    {t.compressInfo1Title}
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    When you drag and drop a file, it is loaded into a local HTML5 canvas. The quality adjustment slider scales the canvas rendering matrix locally, exporting the result to a compressed Blob on your device. Your files never leave your computer.
+                    {t.compressInfo1Desc}
                   </p>
                 </div>
 
                 <div className="space-y-2.5">
                   <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                    ⚡ WebP & JPEG Format Optimization
+                    {t.compressInfo2Title}
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    WebP and JPEG are lossy formats, meaning they achieve high compression ratios by discarding visual noise that the human eye cannot detect. Dragging the quality slider to 70%–80% can shrink file sizes by up to 80% with zero visible loss in image sharpness.
+                    {t.compressInfo2Desc}
                   </p>
                 </div>
 
                 <div className="space-y-2.5">
                   <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                    💡 Lossless PNG Notice
+                    {t.compressInfo3Title}
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    PNG files use lossless compression, which preserves pixel definitions perfectly but results in larger files. Standard quality sliders cannot compress PNGs. If you upload a PNG, convert it to WebP or JPEG inside the format panel to drastically reduce its size.
+                    {t.compressInfo3Desc}
                   </p>
                 </div>
 
                 <div className="space-y-2.5">
                   <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                    🚀 Faster Page Speeds
+                    {t.compressInfo4Title}
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Large photos bloat page load times and trigger mobile bandwidth lag. Compressing images under 500 KB before putting them on websites or emails improves your site's SEO scores, reduces user bounce rates, and lowers loading times.
+                    {t.compressInfo4Desc}
                   </p>
                 </div>
               </div>

@@ -2,32 +2,34 @@
 
 import { useState } from "react";
 import ToolCard from "./ToolCard";
+import { useLanguage } from "@/components/LanguageContext";
 
 export default function ToolsCatalog() {
   const [activeTab, setActiveTab] = useState<"all" | "bg" | "edit" | "format">("all");
+  const { t } = useLanguage();
 
   const tools = [
     {
-      title: "Remove Background",
-      description: "Remove image backgrounds instantly in your browser using local AI. No server uploads, 100% private.",
+      title: t.cardRemoveBgTitle,
+      description: t.cardRemoveBgDesc,
       href: "/remove-background",
       icon: "sparkles" as const,
-      badge: "AI Powered",
+      badge: "AI",
       badgeType: "ai" as const,
       colorTheme: "indigo" as const,
     },
     {
-      title: "Add Text to Image",
-      description: "Place, style, and drag custom text overlays onto your images. Edit font sizes, families, and colors.",
+      title: t.cardAddTextTitle,
+      description: t.cardAddTextDesc,
       href: "/add-text",
       icon: "type" as const,
-      badge: "Draggable",
+      badge: t.addText,
       badgeType: "new" as const,
       colorTheme: "cyan" as const,
     },
     {
-      title: "Convert Format",
-      description: "Convert image files between PNG, JPEG, WEBP, and BMP instantly. Control output quality and scale.",
+      title: t.cardConvertTitle,
+      description: t.cardConvertDesc,
       href: "/convert",
       icon: "refresh" as const,
       badge: "Offline",
@@ -35,8 +37,8 @@ export default function ToolsCatalog() {
       colorTheme: "emerald" as const,
     },
     {
-      title: "Resize & Crop",
-      description: "Crop to exact aspect ratios and resize dimensions without losing image clarity. Powered by Canvas.",
+      title: t.cardResizeTitle,
+      description: t.cardResizeDesc,
       href: "/resize",
       icon: "crop" as const,
       badge: "Offline",
@@ -44,21 +46,21 @@ export default function ToolsCatalog() {
       colorTheme: "amber" as const,
     },
     {
-      title: "Compress Image",
-      description: "Reduce image file sizes instantly without losing visible quality. 100% free, private, and offline.",
+      title: t.cardCompressTitle,
+      description: t.cardCompressDesc,
       href: "/compress",
       icon: "percent" as const,
-      badge: "Size Reducer",
+      badge: "Size",
       badgeType: "new" as const,
       colorTheme: "emerald" as const,
     },
   ];
 
   const tabs = [
-    { id: "all" as const, label: "All Tools" },
-    { id: "bg" as const, label: "Background Removal" },
-    { id: "edit" as const, label: "Edit & Annotate" },
-    { id: "format" as const, label: "Format & Size" },
+    { id: "all" as const, label: t.allTools },
+    { id: "bg" as const, label: t.removeBg },
+    { id: "edit" as const, label: t.addText },
+    { id: "format" as const, label: t.resize },
   ];
 
   const filteredTools = tools.filter((tool) => {

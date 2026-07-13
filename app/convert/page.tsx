@@ -5,6 +5,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Dropzone from "@/components/Dropzone";
 import { RefreshCw, Trash2, Download, AlertCircle, ArrowLeft, ShieldCheck } from "lucide-react";
+import { useLanguage } from "@/components/LanguageContext";
 
 export default function ConvertPage() {
   const [image, setImage] = useState<File | null>(null);
@@ -13,6 +14,7 @@ export default function ConvertPage() {
   const [quality, setQuality] = useState(0.85);
   const [isConverting, setIsConverting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   // Clean up Object URLs to prevent memory leaks
   useEffect(() => {
@@ -123,16 +125,16 @@ export default function ConvertPage() {
               <div>
                 <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-full w-fit mb-1.5">
                   <RefreshCw className="h-3.5 w-3.5 text-indigo-500" />
-                  <span>Convert Format</span>
+                  <span>{t.convert}</span>
                 </div>
                 <h1 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white">
-                  Convert Image Format
+                  {t.cardConvertTitle}
                 </h1>
               </div>
             </div>
             <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 w-fit self-center md:self-auto">
               <ShieldCheck className="h-4 w-4" />
-              <span>100% Offline-Native Privacy</span>
+              <span>{t.privacyBadge}</span>
             </div>
           </div>
 
@@ -147,13 +149,13 @@ export default function ConvertPage() {
               <div className="lg:col-span-2 flex flex-col gap-6 order-2 lg:order-1">
                 <div className="border border-border rounded-2xl bg-card p-6 flex flex-col gap-6">
                   <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider border-b border-slate-100 dark:border-zinc-800/80 pb-2">
-                    Format Settings
+                    {t.formatSettings}
                   </h2>
 
                   {/* Format selector */}
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      Target Format
+                      {t.targetFormat}
                     </label>
                     <div className="grid grid-cols-3 gap-2">
                       {(["png", "jpeg", "webp"] as const).map((format) => (
@@ -177,7 +179,7 @@ export default function ConvertPage() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                          Compression Quality
+                          {t.compressQuality}
                         </label>
                         <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
                           {Math.round(quality * 100)}%
@@ -230,7 +232,7 @@ export default function ConvertPage() {
                     className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-850 text-slate-700 dark:text-white rounded-lg text-sm font-semibold transition-all active:scale-95 cursor-pointer"
                   >
                     <Trash2 className="h-4 w-4" />
-                    Reset Image
+                    {t.resetBtn}
                   </button>
 
                   <button
@@ -239,9 +241,10 @@ export default function ConvertPage() {
                     className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-750 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white rounded-lg text-sm font-bold transition-all active:scale-95 shadow-md shadow-indigo-600/10 disabled:opacity-50 cursor-pointer"
                   >
                     <Download className={`h-4 w-4 ${isConverting ? "animate-spin" : ""}`} />
-                    {isConverting ? "Converting..." : "Convert & Download"}
+                    {isConverting ? t.processing : t.convertDownload}
                   </button>
                 </div>
+
               </div>
             </div>
           )}
@@ -252,47 +255,47 @@ export default function ConvertPage() {
               
               <div className="text-center space-y-3">
                 <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white">
-                  How does browser-native image conversion work?
+                  {t.convertInfoTitle}
                 </h2>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                  MediaDit converts image formats entirely client-side, giving you high-speed exports with absolute privacy.
+                  {t.convertInfoSub}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                 <div className="space-y-2.5">
                   <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                    🔒 Secure & Serverless
+                    {t.convertInfo1Title}
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    When you convert images from PNG to WebP or JPEG to PNG, your photos are processed inside browser memory. Because we don't upload files to remote servers, your private documents never leave your computer.
+                    {t.convertInfo1Desc}
                   </p>
                 </div>
 
                 <div className="space-y-2.5">
                   <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                    🌈 Format Comparison (WebP, PNG, JPEG)
+                    {t.convertInfo2Title}
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Choose the target format that fits your needs. Use <strong>PNG</strong> for lossless transparent graphics, <strong>JPEG</strong> for standard photo sharing with custom compression sliders, and <strong>WebP</strong> for highly compressed web assets.
+                    {t.convertInfo2Desc}
                   </p>
                 </div>
 
                 <div className="space-y-2.5">
                   <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                    🎨 Lossless Transparency Layers
+                    {t.convertInfo3Title}
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    When converting images that have transparent backgrounds (like graphics or background-removed photos) into target formats, make sure to use <strong>PNG</strong> or <strong>WebP</strong> to preserve the transparent layers. Converting transparent images to JPEG will fill the transparency with a solid white background.
+                    {t.convertInfo3Desc}
                   </p>
                 </div>
 
                 <div className="space-y-2.5">
                   <h3 className="font-bold text-slate-800 dark:text-white text-base">
-                    ⚡ High-Speed Canvas Exports
+                    {t.convertInfo4Title}
                   </h3>
                   <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                    Our conversion process uses native HTML5 canvas rasterization. By drawing pixels and converting the canvas context directly inside your GPU, we can instantly export images in under a second.
+                    {t.convertInfo4Desc}
                   </p>
                 </div>
               </div>

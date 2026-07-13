@@ -5,6 +5,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Dropzone from "@/components/Dropzone";
 import { Crop, Trash2, Download, RefreshCw, ArrowLeft, ShieldCheck, Maximize2, Settings } from "lucide-react";
+import { useLanguage } from "@/components/LanguageContext";
 
 interface CropBox {
   x: number; // canvas scale
@@ -16,6 +17,7 @@ interface CropBox {
 export default function ResizePage() {
   const [image, setImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { t } = useLanguage();
   
   // Custom dimensions (pixels)
   const [targetWidth, setTargetWidth] = useState<number>(0);
@@ -37,7 +39,7 @@ export default function ResizePage() {
   const cropStartRef = useRef<CropBox | null>(null);
 
   const ratioPresets = [
-    { label: "Free", value: "free" },
+    { label: t.custom, value: "free" },
     { label: "1:1 Square", value: "1:1" },
     { label: "16:9 Landscape", value: "16:9" },
     { label: "9:16 Portrait", value: "9:16" },
@@ -449,11 +451,11 @@ export default function ResizePage() {
             className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Tools
+            {t.allTools}
           </Link>
           <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-zinc-800 px-3 py-1.5 rounded-full">
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
-            <span>Runs locally, offline-safe</span>
+            <span>{t.privacyBadge}</span>
           </div>
         </div>
 
@@ -461,10 +463,10 @@ export default function ResizePage() {
         <div className="text-center md:text-left mb-8">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-800 dark:text-white flex items-center justify-center md:justify-start gap-2">
             <Crop className="h-7 w-7 text-indigo-500" />
-            Resize & Crop Image
+            {t.cardResizeTitle}
           </h1>
           <p className="mt-2 text-slate-600 dark:text-slate-400 text-sm md:text-base max-w-2xl font-medium">
-            Drag the crop bounding box corners to frame your picture, or type in exact target dimensions.
+            {t.cardResizeDesc}
           </p>
         </div>
 
@@ -473,8 +475,8 @@ export default function ResizePage() {
           <div className="glass-panel rounded-2xl p-6 md:p-8 min-h-[400px] flex flex-col items-center justify-center transition-colors">
             <Dropzone
               onFileSelected={handleFileSelected}
-              label="Drag & drop image to crop & resize"
-              description="Supports PNG, JPEG, WEBP up to 15MB"
+              label={t.dropzoneTitle}
+              description={t.dropzoneDesc}
             />
           </div>
         ) : (
@@ -486,12 +488,12 @@ export default function ResizePage() {
               <div className="glass-panel p-5 rounded-2xl border border-border space-y-4">
                 <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-zinc-800/80 pb-2">
                   <Maximize2 className="h-4 w-4 text-indigo-500" />
-                  Dimensions (px)
+                  {t.resizeSettings}
                 </h2>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Width</label>
+                    <label className="text-[10px] font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wider">{t.width}</label>
                     <input
                       type="number"
                       value={targetWidth}
@@ -500,7 +502,7 @@ export default function ResizePage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wider">Height</label>
+                    <label className="text-[10px] font-bold text-slate-550 dark:text-slate-400 uppercase tracking-wider">{t.height}</label>
                     <input
                       type="number"
                       value={targetHeight}
@@ -518,7 +520,7 @@ export default function ResizePage() {
                       onChange={(e) => setLockAspectRatio(e.target.checked)}
                       className="rounded border-slate-300 dark:border-zinc-800 text-indigo-600 focus:ring-indigo-500/30"
                     />
-                    <span>Lock current aspect ratio</span>
+                    <span>{t.lockAspect}</span>
                   </label>
                 )}
               </div>
@@ -527,7 +529,7 @@ export default function ResizePage() {
               <div className="glass-panel p-5 rounded-2xl border border-border space-y-4">
                 <h2 className="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-zinc-800/80 pb-2">
                   <Settings className="h-4 w-4 text-indigo-500" />
-                  Aspect Ratio
+                  {t.aspectRatio}
                 </h2>
 
                 <div className="flex flex-col gap-1.5">
@@ -535,7 +537,7 @@ export default function ResizePage() {
                     <button
                       key={preset.value}
                       onClick={() => handleRatioSelect(preset.value)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-xs font-bold border transition-colors ${
+                      className={`w-full text-left px-3 py-2 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
                         aspectRatioValue === preset.value
                           ? "bg-indigo-600/10 border-indigo-500/40 text-indigo-600 dark:text-indigo-400"
                           : "bg-slate-50 dark:bg-zinc-950/40 border-slate-200 dark:border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -572,19 +574,19 @@ export default function ResizePage() {
               <div className="flex flex-wrap items-center justify-between gap-4 p-4 border border-border rounded-2xl bg-card shadow-sm">
                 <button
                   onClick={handleReset}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-850 text-slate-700 dark:text-white rounded-lg text-sm font-semibold transition-all active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-850 text-slate-700 dark:text-white rounded-lg text-sm font-semibold transition-all active:scale-95 cursor-pointer"
                 >
                   <Trash2 className="h-4 w-4" />
-                  Reset Image
+                  {t.resetBtn}
                 </button>
 
                 <button
                   onClick={handleDownload}
                   disabled={!cropBox}
-                  className="inline-flex items-center gap-2 px-6 py-2 bg-indigo-600 hover:bg-indigo-750 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white rounded-lg text-sm font-bold transition-all active:scale-95 shadow-md shadow-indigo-600/10"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-750 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white rounded-lg text-sm font-bold transition-all active:scale-95 shadow-md shadow-indigo-600/10 cursor-pointer"
                 >
                   <Download className="h-4 w-4" />
-                  Download Crop
+                  {t.cropBtn}
                 </button>
               </div>
 

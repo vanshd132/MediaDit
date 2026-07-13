@@ -2,6 +2,7 @@
 
 import { useState, useRef, DragEvent, ChangeEvent } from "react";
 import { Upload, Image as ImageIcon, AlertCircle } from "lucide-react";
+import { useLanguage } from "@/components/LanguageContext";
 
 interface DropzoneProps {
   onFileSelected: (file: File) => void;
@@ -15,12 +16,16 @@ export default function Dropzone({
   onFileSelected,
   accept = "image/png, image/jpeg, image/webp",
   maxSizeMB = 15,
-  label = "Drag & drop your image here",
-  description = "Supports PNG, JPEG, and WEBP up to 15MB",
+  label,
+  description,
 }: DropzoneProps) {
   const [isDragActive, setIsDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useLanguage();
+
+  const displayLabel = label || t.dropzoneTitle;
+  const displayDescription = description || t.dropzoneDesc;
 
   const processFile = (file: File) => {
     setError(null);
@@ -112,19 +117,19 @@ export default function Dropzone({
 
           <div className="space-y-1">
             <p className="text-base font-semibold text-slate-800 dark:text-white">
-              {label}
+              {displayLabel}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              {description}
+              {displayDescription}
             </p>
           </div>
 
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition-all shadow-md shadow-indigo-600/15"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-755 text-white rounded-lg text-sm font-semibold transition-all shadow-md shadow-indigo-600/15 cursor-pointer"
           >
             <ImageIcon className="h-4 w-4" />
-            Select Image File
+            {t.dropzoneSelect}
           </button>
         </div>
       </div>

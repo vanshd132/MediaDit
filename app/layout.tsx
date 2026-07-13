@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { LanguageProvider } from "@/components/LanguageContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,6 +17,23 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MediaDit | Free Online Image Tools & Background Remover",
   description: "Free, serverless client-side image editor. Remove backgrounds with AI, add text, resize, crop, and convert images instantly with complete privacy.",
+  keywords: [
+    "Free Online Photo Editor",
+    "Remove Background Instantly",
+    "Add Text to Image Online",
+    "Client-Side Background Remover",
+    "Image Converter PNG to WEBP",
+    "Crop and Resize Images Free",
+    "Offline Photo Editor",
+    "No Watermark Background Remover"
+  ],
+  openGraph: {
+    title: "MediaDit | Free Online Image Tools",
+    description: "Remove background, add text, crop, resize, and convert images. 100% offline, free, and secure.",
+    url: "https://mediadit.vercel.app",
+    siteName: "MediaDit",
+    type: "website",
+  },
   verification: {
     other: {
       "msvalidate.01": "A2925BB0F67E06574E6C433863C8EC1F",
@@ -50,7 +68,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
         <Analytics />
       </body>
     </html>

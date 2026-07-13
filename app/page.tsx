@@ -1,36 +1,18 @@
-import type { Metadata } from "next";
+"use client";
+
 import Script from "next/script";
 import Header from "@/components/Header";
 import ToolsCatalog from "@/components/ToolsCatalog";
-
-export const metadata: Metadata = {
-  title: "MediaDit | Free Online Image Tools & Background Remover",
-  description: "Free, serverless client-side image editor. Remove backgrounds with AI, add text, resize, crop, and convert images instantly with complete privacy.",
-  keywords: [
-    "Free Online Photo Editor",
-    "Remove Background Instantly",
-    "Add Text to Image Online",
-    "Client-Side Background Remover",
-    "Image Converter PNG to WEBP",
-    "Crop and Resize Images Free",
-    "Offline Photo Editor",
-    "No Watermark Background Remover"
-  ],
-  openGraph: {
-    title: "MediaDit | Free Online Image Tools",
-    description: "Remove background, add text, crop, resize, and convert images. 100% offline, free, and secure.",
-    url: "https://mediadit.vercel.app",
-    siteName: "MediaDit",
-    type: "website",
-  },
-};
+import { useLanguage } from "@/components/LanguageContext";
 
 export default function Home() {
+  const { t } = useLanguage();
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "MediaDit Photo Editor",
-    "description": "100% Free client-side image utility suite. Remove background instantly, add text, crop, resize and convert images directly in your browser. No signups, no uploads to server.",
+    "description": t.heroSub,
     "applicationCategory": "MultimediaApplication",
     "operatingSystem": "All",
     "browserRequirements": "Requires JavaScript. Requires WebGL for background removal.",
@@ -43,6 +25,7 @@ export default function Home() {
 
   return (
     <>
+      {/* JSON-LD Structured Metadata Schema for Search Engines */}
       <Script
         id="json-ld"
         type="application/ld+json"
@@ -57,11 +40,11 @@ export default function Home() {
         <section className="relative overflow-hidden pt-10 pb-8 md:pt-14 md:pb-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-3">
             <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white sm:text-5xl leading-tight">
-              Image editing, simplified.
+              {t.heroTitle}
             </h1>
 
             <p className="max-w-2xl mx-auto text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-              Free, browser-native tools to remove backgrounds, write text overlays, crop, resize, and convert images. <strong>No signups, no file uploads, 100% private.</strong>
+              {t.heroSub}
             </p>
           </div>
         </section>
@@ -77,37 +60,37 @@ export default function Home() {
         <section className="pt-24 pb-20 border-t border-slate-200/60 dark:border-zinc-800/40 transition-colors">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white text-center mb-10">
-              Why run image tools locally?
+              {t.whyTitle}
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Privacy */}
               <div className="space-y-3 text-left">
                 <h3 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                  <span>🔒</span> Zero Uploads, Total Privacy
+                  {t.why1Title}
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Every time you upload a photo to standard online editors, your private images are sent to third-party cloud servers. MediaDit runs completely inside your browser memory. Your images never leave your computer.
+                  {t.why1Desc}
                 </p>
               </div>
 
               {/* Local AI */}
               <div className="space-y-3 text-left">
                 <h3 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                  <span>⚡</span> Tiny, High-Speed AI Models
+                  {t.why2Title}
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  Our background remover operates entirely on your device using a compressed, highly optimized 50MB neural network. Once cached on first run, it erases backgrounds instantly—even when you are completely offline.
+                  {t.why2Desc}
                 </p>
               </div>
 
               {/* No Signups */}
               <div className="space-y-3 text-left">
                 <h3 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                  <span>✨</span> No Signups, No Paywalls
+                  {t.why3Title}
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                  We believe simple tasks shouldn't require creating accounts, giving away your email, or subscribing to paywalls. There are no limits, no watermarks, and no signups required. Ever.
+                  {t.why3Desc}
                 </p>
               </div>
             </div>
@@ -118,7 +101,7 @@ export default function Home() {
         <section className="pb-12 border-t border-slate-200/60 dark:border-zinc-800/40 pt-8 transition-colors">
           <div className="mx-auto max-w-3xl px-4 text-center">
             <p className="text-xs text-slate-500 dark:text-slate-500 font-semibold flex items-center justify-center gap-1.5">
-              <span>🔒</span> All operations run locally inside your browser memory. Your images never leave your device.
+              {t.footerNotice}
             </p>
           </div>
         </section>
