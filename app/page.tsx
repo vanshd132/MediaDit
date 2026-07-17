@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Dropzone from "@/components/Dropzone";
 import ToolsCatalog from "@/components/ToolsCatalog";
 import { useLanguage } from "@/components/LanguageContext";
-import { Sparkles, Type, RefreshCw, Crop, Percent, Download, Trash2, Plus, ShieldCheck, FileImage } from "lucide-react";
+import { Sparkles, Type, RefreshCw, Crop, Percent, Download, Trash2, Plus, ShieldCheck, FileImage, Undo, Redo } from "lucide-react";
 
 interface TextOverlay {
   id: string;
@@ -48,6 +48,97 @@ export default function Home() {
   // Compress & Format States
   const [targetFormat, setTargetFormat] = useState<"png" | "jpeg" | "webp">("png");
   const [quality, setQuality] = useState(90);
+
+  interface HistoryState {
+    imageFile: File | null;
+    previewUrl: string | null;
+    bgType: "transparent" | "color";
+    bgColor: string;
+    textOverlays: TextOverlay[];
+    targetWidth: number;
+    targetHeight: number;
+  }
+
+  const [history, setHistory] = useState<HistoryState[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+
+  const pushStateToHistory = (customState?: Partial<HistoryState>) => {
+    const nextImage = customState && "imageFile" in customState ? customState.imageFile! : image;
+    const nextPreview = customState && "previewUrl" in customState ? customState.previewUrl! : previewUrl;
+    const nextBgType = customState && "bgType" in customState ? customState.bgType! : bgType;
+    const nextBgColor = customState && "bgColor" in customState ? customState.bgColor! : bgColor;
+    const nextTextOverlays = customState && "textOverlays" in customState ? customState.textOverlays! : [...textOverlays];
+    const nextWidth = customState && "targetWidth" in customState ? customState.targetWidth! : targetWidth;
+    const nextHeight = customState && "targetHeight" in customState ? customState.targetHeight! : targetHeight;
+
+    const currentState: HistoryState = {
+      imageFile: nextImage,
+      previewUrl: nextPreview,
+      bgType: nextBgType,
+      bgColor: nextBgColor,
+      textOverlays: nextTextOverlays,
+      targetWidth: nextWidth,
+      targetHeight: nextHeight,
+    };
+
+    const nextHistory = history.slice(0, historyIndex + 1);
+    setHistory([...nextHistory, currentState]);
+    setHistoryIndex(nextHistory.length);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const prevIndex = historyIndex - 1;
+      setHistoryIndex(prevIndex);
+      const state = history[prevIndex];
+
+      setImage(state.imageFile);
+      setPreviewUrl(state.previewUrl);
+      setBgType(state.bgType);
+      setBgColor(state.bgColor);
+      setTextOverlays(state.textOverlays);
+      setTargetWidth(state.targetWidth);
+      setTargetHeight(state.targetHeight);
+
+      if (state.previewUrl) {
+        const img = new Image();
+        img.onload = () => {
+          imgRef.current = img;
+          drawCanvas();
+        };
+        img.src = state.previewUrl;
+      } else {
+        imgRef.current = null;
+      }
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const nextIndex = historyIndex + 1;
+      setHistoryIndex(nextIndex);
+      const state = history[nextIndex];
+
+      setImage(state.imageFile);
+      setPreviewUrl(state.previewUrl);
+      setBgType(state.bgType);
+      setBgColor(state.bgColor);
+      setTextOverlays(state.textOverlays);
+      setTargetWidth(state.targetWidth);
+      setTargetHeight(state.targetHeight);
+
+      if (state.previewUrl) {
+        const img = new Image();
+        img.onload = () => {
+          imgRef.current = img;
+          drawCanvas();
+        };
+        img.src = state.previewUrl;
+      } else {
+        imgRef.current = null;
+      }
+    }
+  };
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -115,6 +206,19 @@ export default function Home() {
       setTargetWidth(img.width);
       setTargetHeight(img.height);
       setOriginalAspect(img.width / img.height);
+
+      const initialState = {
+        imageFile: file,
+        previewUrl: url,
+        bgType: "transparent" as const,
+        bgColor: "#ffffff",
+        textOverlays: [],
+        targetWidth: img.width,
+        targetHeight: img.height,
+      };
+      setHistory([initialState]);
+      setHistoryIndex(0);
+
       drawCanvas();
     };
     img.src = url;
@@ -213,6 +317,20 @@ export default function Home() {
         setTargetHeight(img.height);
         setOriginalAspect(img.width / img.height);
         setPreviewUrl(newUrl);
+
+        const newState = {
+          imageFile: image,
+          previewUrl: newUrl,
+          bgType: "transparent" as const,
+          bgColor: "#ffffff",
+          textOverlays: [...textOverlays],
+          targetWidth: img.width,
+          targetHeight: img.height,
+        };
+        const nextHistory = history.slice(0, historyIndex + 1);
+        setHistory([...nextHistory, newState]);
+        setHistoryIndex(nextHistory.length);
+
         drawCanvas();
       };
       img.src = newUrl;
@@ -240,8 +358,10 @@ export default function Home() {
       fontFamily: "sans-serif",
     };
 
-    setTextOverlays([...textOverlays, newOverlay]);
+    const updated = [...textOverlays, newOverlay];
+    setTextOverlays(updated);
     setActiveTextId(newOverlay.id);
+    pushStateToHistory({ textOverlays: updated });
   };
 
   const updateActiveText = (fields: Partial<TextOverlay>) => {
@@ -253,8 +373,10 @@ export default function Home() {
 
   const handleDeleteActiveText = () => {
     if (!activeTextId) return;
-    setTextOverlays(textOverlays.filter((t) => t.id !== activeTextId));
+    const updated = textOverlays.filter((t) => t.id !== activeTextId);
+    setTextOverlays(updated);
     setActiveTextId(null);
+    pushStateToHistory({ textOverlays: updated });
   };
 
   const getCanvasCoords = (clientX: number, clientY: number): { x: number; y: number } | null => {
@@ -324,6 +446,9 @@ export default function Home() {
   };
 
   const handlePointerUp = () => {
+    if (isDraggingRef.current) {
+      pushStateToHistory();
+    }
     isDraggingRef.current = false;
     dragStartRef.current = null;
     activeOverlayStartRef.current = null;
@@ -341,6 +466,10 @@ export default function Home() {
     if (lockAspect && originalAspect) {
       setTargetWidth(Math.round(val * originalAspect));
     }
+  };
+
+  const handleResizeBlur = () => {
+    pushStateToHistory({ targetWidth, targetHeight });
   };
 
   const handleDownload = () => {
@@ -543,58 +672,79 @@ export default function Home() {
               {/* Right Column: Settings Sidebar */}
               <div className="lg:col-span-5 flex flex-col gap-6">
                 
-                {/* Tool Selector Tab Bar */}
-                <div className="flex bg-slate-100 dark:bg-zinc-950 p-1.5 rounded-xl border border-slate-200/80 dark:border-zinc-850 justify-between items-center overflow-x-auto gap-1">
-                  <button
-                    onClick={() => setActiveTool("none")}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
-                      activeTool === "none"
-                        ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
-                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
-                    }`}
-                  >
-                    View
-                  </button>
-                  <button
-                    onClick={() => setActiveTool("remove-bg")}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
-                      activeTool === "remove-bg"
-                        ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
-                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
-                    }`}
-                  >
-                    Remove BG
-                  </button>
-                  <button
-                    onClick={() => setActiveTool("add-text")}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
-                      activeTool === "add-text"
-                        ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
-                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
-                    }`}
-                  >
-                    Add Text
-                  </button>
-                  <button
-                    onClick={() => setActiveTool("resize")}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
-                      activeTool === "resize"
-                        ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
-                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
-                    }`}
-                  >
-                    Resize
-                  </button>
-                  <button
-                    onClick={() => setActiveTool("compress")}
-                    className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
-                      activeTool === "compress"
-                        ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
-                        : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
-                    }`}
-                  >
-                    Export
-                  </button>
+                {/* Tool Selector Tab Bar & History Controls */}
+                <div className="flex bg-slate-100 dark:bg-zinc-950 p-1.5 rounded-xl border border-slate-200/80 dark:border-zinc-850 justify-between items-center overflow-x-auto gap-2">
+                  <div className="flex gap-1 shrink-0 border-r border-slate-200 dark:border-zinc-850 pr-2">
+                    <button
+                      onClick={handleUndo}
+                      disabled={historyIndex <= 0}
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                      title="Undo"
+                    >
+                      <Undo className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={handleRedo}
+                      disabled={historyIndex >= history.length - 1}
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                      title="Redo"
+                    >
+                      <Redo className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  <div className="flex flex-1 justify-between items-center gap-0.5 overflow-x-auto">
+                    <button
+                      onClick={() => setActiveTool("none")}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
+                        activeTool === "none"
+                          ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
+                          : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white"
+                      }`}
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => setActiveTool("remove-bg")}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
+                        activeTool === "remove-bg"
+                          ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
+                          : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white"
+                      }`}
+                    >
+                      Remove BG
+                    </button>
+                    <button
+                      onClick={() => setActiveTool("add-text")}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
+                        activeTool === "add-text"
+                          ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
+                          : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white"
+                      }`}
+                    >
+                      Add Text
+                    </button>
+                    <button
+                      onClick={() => setActiveTool("resize")}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
+                        activeTool === "resize"
+                          ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
+                          : "text-slate-500 hover:text-slate-855 dark:text-slate-400 dark:hover:text-white"
+                      }`}
+                    >
+                      Resize
+                    </button>
+                    <button
+                      onClick={() => setActiveTool("compress")}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
+                        activeTool === "compress"
+                          ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
+                          : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white"
+                      }`}
+                    >
+                      Reduce Size
+                    </button>
+                  </div>
                 </div>
 
                 {/* Action Sidebar Body Panel */}
@@ -871,78 +1021,85 @@ export default function Home() {
                         </label>
                       </div>
                     )}
-
-                    {/* COMPRESS & FORMAT (EXPORT) TOOL */}
+                    {/* COMPRESS & SIZE REDUCTION TOOL */}
                     {activeTool === "compress" && (
                       <div className="space-y-5 animate-in fade-in">
                         <div className="space-y-1">
                           <h3 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
                             <Percent className="h-4.5 w-4.5 text-indigo-500" />
-                            Format & Quality Settings
+                            Compress Size / Quality
                           </h3>
                           <p className="text-xs text-slate-555 dark:text-slate-400 leading-relaxed">
-                            Choose export settings to optimize your image dimensions and file size.
+                            Reduce the file size of your JPEGs or WebPs. Adjust the quality slider below to optimize the file size.
                           </p>
                         </div>
 
-                        <div className="space-y-2 pt-1">
-                          <label className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block">Output Format</label>
-                          <div className="flex bg-slate-100 dark:bg-zinc-950 p-1 border border-slate-200 dark:border-zinc-850 rounded-lg">
-                            {["png", "jpeg", "webp"].map((fmt) => (
-                              <button
-                                key={fmt}
-                                onClick={() => setTargetFormat(fmt as any)}
-                                className={`flex-1 py-1.5 rounded text-xs font-bold uppercase transition-colors cursor-pointer ${
-                                  targetFormat === fmt
-                                    ? "bg-indigo-600 text-white shadow-sm"
-                                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
-                                }`}
-                              >
-                                {fmt}
-                              </button>
-                            ))}
+                        <div className="space-y-2.5 pt-1">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-slate-500 dark:text-slate-400">Quality Adjustment</span>
+                            <span className="text-indigo-600 dark:text-indigo-400 font-bold font-mono">{quality}%</span>
                           </div>
-                        </div>
-
-                        {targetFormat !== "png" && (
-                          <div className="space-y-2.5 animate-in fade-in">
-                            <div className="flex justify-between items-center text-xs">
-                              <span className="text-slate-500 dark:text-slate-400">Quality Adjustment</span>
-                              <span className="text-indigo-600 dark:text-indigo-400 font-bold font-mono">{quality}%</span>
-                            </div>
-                            <input
-                              type="range"
-                              min="10"
-                              max="100"
-                              value={quality}
-                              onChange={(e) => setQuality(parseInt(e.target.value))}
-                              className="w-full h-1.5 bg-slate-200 dark:bg-zinc-900 rounded-lg appearance-none cursor-pointer accent-indigo-650"
-                            />
-                            <p className="text-[10px] text-slate-550 dark:text-slate-500 leading-relaxed italic">
-                              Lower quality adjustments reduce file sizes drastically with minimal visual quality impact.
+                          <input
+                            type="range"
+                            min="10"
+                            max="100"
+                            value={quality}
+                            onChange={(e) => setQuality(parseInt(e.target.value))}
+                            className="w-full h-1.5 bg-slate-200 dark:bg-zinc-900 rounded-lg appearance-none cursor-pointer accent-indigo-650"
+                          />
+                          {targetFormat === "png" && (
+                            <p className="text-[10px] text-amber-600 dark:text-amber-500 leading-relaxed font-semibold">
+                              ⚠️ Note: PNG format is lossless. Change export format to JPEG or WEBP (below) to see file size savings.
                             </p>
-                          </div>
-                        )}
+                          )}
+                          {targetFormat !== "png" && (
+                            <p className="text-[10px] text-slate-550 dark:text-slate-500 leading-relaxed italic">
+                              Setting the slider between 70% and 80% typically offers high size reduction with zero visible loss in image quality.
+                            </p>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Sidebar Bottom Action Buttons */}
-                  <div className="flex gap-3 pt-6 border-t border-slate-100 dark:border-zinc-800/80 mt-6">
-                    <button
-                      onClick={handleDownload}
-                      className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-extrabold shadow-md shadow-indigo-600/10 active:scale-[0.98] transition-all cursor-pointer"
-                    >
-                      <Download className="h-4.5 w-4.5" />
-                      Download Image
-                    </button>
-                    <button
-                      onClick={handleReset}
-                      className="inline-flex items-center justify-center p-3 bg-slate-100 hover:bg-rose-50 dark:bg-zinc-950 dark:hover:bg-rose-955/20 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-450 border border-slate-250 dark:border-zinc-850 rounded-xl text-sm font-bold active:scale-[0.98] transition-all cursor-pointer"
-                      title="Reset image"
-                    >
-                      <Trash2 className="h-4.5 w-4.5" />
-                    </button>
+                  {/* Sidebar Bottom Action Buttons with Format Selector */}
+                  <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-zinc-800/80 mt-6">
+                    {/* Always visible Export Format Selector */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block">Export Format</label>
+                      <div className="flex bg-slate-100 dark:bg-zinc-950 p-1 border border-slate-200 dark:border-zinc-850 rounded-lg">
+                        {["png", "jpeg", "webp"].map((fmt) => (
+                          <button
+                            key={fmt}
+                            onClick={() => setTargetFormat(fmt as any)}
+                            className={`flex-1 py-1 px-2 rounded text-xs font-bold uppercase transition-colors cursor-pointer ${
+                              targetFormat === fmt
+                                ? "bg-indigo-600 text-white shadow-sm"
+                                : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+                            }`}
+                          >
+                            {fmt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        onClick={handleDownload}
+                        className="flex-1 inline-flex items-center justify-center gap-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-extrabold shadow-md shadow-indigo-600/10 active:scale-[0.98] transition-all cursor-pointer"
+                      >
+                        <Download className="h-4.5 w-4.5" />
+                        Download Image
+                      </button>
+                      <button
+                        onClick={handleReset}
+                        className="inline-flex items-center justify-center p-3 bg-slate-100 hover:bg-rose-50 dark:bg-zinc-950 dark:hover:bg-rose-955/20 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-450 border border-slate-250 dark:border-zinc-850 rounded-xl text-sm font-bold active:scale-[0.98] transition-all cursor-pointer"
+                        title="Reset image"
+                      >
+                        <Trash2 className="h-4.5 w-4.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
