@@ -45,6 +45,10 @@ export default function Home() {
   const [lockAspect, setLockAspect] = useState(true);
   const [originalAspect, setOriginalAspect] = useState<number>(1);
 
+  // Crop States (in raw image pixels)
+  const [cropBox, setCropBox] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [activeHandle, setActiveHandle] = useState<string | null>(null);
+
   // Compress & Format States
   const [targetFormat, setTargetFormat] = useState<"png" | "jpeg" | "webp">("png");
   const [quality, setQuality] = useState(90);
@@ -57,6 +61,8 @@ export default function Home() {
     textOverlays: TextOverlay[];
     targetWidth: number;
     targetHeight: number;
+    imageElement: HTMLImageElement | null;
+    cropBox: { x: number; y: number; width: number; height: number } | null;
   }
 
   const [history, setHistory] = useState<HistoryState[]>([]);
@@ -70,6 +76,8 @@ export default function Home() {
     const nextTextOverlays = customState && "textOverlays" in customState ? customState.textOverlays! : [...textOverlays];
     const nextWidth = customState && "targetWidth" in customState ? customState.targetWidth! : targetWidth;
     const nextHeight = customState && "targetHeight" in customState ? customState.targetHeight! : targetHeight;
+    const nextImgElement = customState && "imageElement" in customState ? customState.imageElement! : imgRef.current;
+    const nextCropBox = customState && "cropBox" in customState ? customState.cropBox! : cropBox;
 
     const currentState: HistoryState = {
       imageFile: nextImage,
@@ -79,6 +87,8 @@ export default function Home() {
       textOverlays: nextTextOverlays,
       targetWidth: nextWidth,
       targetHeight: nextHeight,
+      imageElement: nextImgElement,
+      cropBox: nextCropBox,
     };
 
     const nextHistory = history.slice(0, historyIndex + 1);
@@ -99,17 +109,10 @@ export default function Home() {
       setTextOverlays(state.textOverlays);
       setTargetWidth(state.targetWidth);
       setTargetHeight(state.targetHeight);
+      imgRef.current = state.imageElement;
+      setCropBox(state.cropBox);
 
-      if (state.previewUrl) {
-        const img = new Image();
-        img.onload = () => {
-          imgRef.current = img;
-          drawCanvas();
-        };
-        img.src = state.previewUrl;
-      } else {
-        imgRef.current = null;
-      }
+      drawCanvas();
     }
   };
 
@@ -126,17 +129,10 @@ export default function Home() {
       setTextOverlays(state.textOverlays);
       setTargetWidth(state.targetWidth);
       setTargetHeight(state.targetHeight);
+      imgRef.current = state.imageElement;
+      setCropBox(state.cropBox);
 
-      if (state.previewUrl) {
-        const img = new Image();
-        img.onload = () => {
-          imgRef.current = img;
-          drawCanvas();
-        };
-        img.src = state.previewUrl;
-      } else {
-        imgRef.current = null;
-      }
+      drawCanvas();
     }
   };
 
@@ -214,7 +210,7 @@ export default function Home() {
   // Redraw canvas whenever states change
   useEffect(() => {
     drawCanvas();
-  }, [image, textOverlays, activeTextId, activeTool, bgType, bgColor, targetWidth, targetHeight]);
+  }, [image, textOverlays, activeTextId, activeTool, bgType, bgColor, targetWidth, targetHeight, cropBox]);
 
   const handleFileSelected = (file: File) => {
     setImage(file);
@@ -235,6 +231,13 @@ export default function Home() {
       setTargetHeight(img.height);
       setOriginalAspect(img.width / img.height);
 
+      const cropW = Math.round(img.width * 0.8);
+      const cropH = Math.round(img.height * 0.8);
+      const cropX = Math.round((img.width - cropW) / 2);
+      const cropY = Math.round((img.height - cropH) / 2);
+      const initialCrop = { x: cropX, y: cropY, width: cropW, height: cropH };
+      setCropBox(initialCrop);
+
       const initialState = {
         imageFile: file,
         previewUrl: url,
@@ -243,6 +246,8 @@ export default function Home() {
         textOverlays: [],
         targetWidth: img.width,
         targetHeight: img.height,
+        imageElement: img,
+        cropBox: initialCrop,
       };
       setHistory([initialState]);
       setHistoryIndex(0);
@@ -310,6 +315,39 @@ export default function Home() {
         ctx.setLineDash([]);
       }
     });
+
+    // Draw crop box overlay if in resize mode
+    if (activeTool === "resize" && cropBox && !hideSelection) {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+      
+      // Top strip
+      ctx.fillRect(0, 0, w, cropBox.y);
+      // Bottom strip
+      ctx.fillRect(0, cropBox.y + cropBox.height, w, Math.max(0, h - (cropBox.y + cropBox.height)));
+      // Left strip
+      ctx.fillRect(0, cropBox.y, cropBox.x, cropBox.height);
+      // Right strip
+      ctx.fillRect(cropBox.x + cropBox.width, cropBox.y, Math.max(0, w - (cropBox.x + cropBox.width)), cropBox.height);
+
+      // Dash outline
+      ctx.strokeStyle = "#6366f1";
+      ctx.lineWidth = Math.max(1.5, w / 400);
+      ctx.setLineDash([6, 6]);
+      ctx.strokeRect(cropBox.x, cropBox.y, cropBox.width, cropBox.height);
+      ctx.setLineDash([]);
+
+      // Corner handles
+      ctx.fillStyle = "#6366f1";
+      const handleSize = Math.max(8, w / 80);
+      // Top Left
+      ctx.fillRect(cropBox.x - handleSize / 2, cropBox.y - handleSize / 2, handleSize, handleSize);
+      // Top Right
+      ctx.fillRect(cropBox.x + cropBox.width - handleSize / 2, cropBox.y - handleSize / 2, handleSize, handleSize);
+      // Bottom Left
+      ctx.fillRect(cropBox.x - handleSize / 2, cropBox.y + cropBox.height - handleSize / 2, handleSize, handleSize);
+      // Bottom Right
+      ctx.fillRect(cropBox.x + cropBox.width - handleSize / 2, cropBox.y + cropBox.height - handleSize / 2, handleSize, handleSize);
+    }
   };
 
   const handleRemoveBackground = async () => {
@@ -354,6 +392,7 @@ export default function Home() {
           textOverlays: [...textOverlays],
           targetWidth: img.width,
           targetHeight: img.height,
+          imageElement: img,
         };
         const nextHistory = history.slice(0, historyIndex + 1);
         setHistory([...nextHistory, newState]);
@@ -417,9 +456,52 @@ export default function Home() {
   };
 
   const handlePointerDown = (clientX: number, clientY: number) => {
-    if (activeTool !== "add-text") return;
     const coords = getCanvasCoords(clientX, clientY);
     if (!coords) return;
+
+    if (activeTool === "resize" && cropBox) {
+      const handleSize = Math.max(8, targetWidth / 80);
+      const grabRadius = handleSize + 8;
+
+      const checkNear = (px: number, py: number) => {
+        return Math.abs(coords.x - px) < grabRadius && Math.abs(coords.y - py) < grabRadius;
+      };
+
+      if (checkNear(cropBox.x, cropBox.y)) {
+        setActiveHandle("top-left");
+        isDraggingRef.current = true;
+        dragStartRef.current = coords;
+        activeOverlayStartRef.current = { x: cropBox.x, y: cropBox.y };
+      } else if (checkNear(cropBox.x + cropBox.width, cropBox.y)) {
+        setActiveHandle("top-right");
+        isDraggingRef.current = true;
+        dragStartRef.current = coords;
+        activeOverlayStartRef.current = { x: cropBox.x + cropBox.width, y: cropBox.y };
+      } else if (checkNear(cropBox.x, cropBox.y + cropBox.height)) {
+        setActiveHandle("bottom-left");
+        isDraggingRef.current = true;
+        dragStartRef.current = coords;
+        activeOverlayStartRef.current = { x: cropBox.x, y: cropBox.y + cropBox.height };
+      } else if (checkNear(cropBox.x + cropBox.width, cropBox.y + cropBox.height)) {
+        setActiveHandle("bottom-right");
+        isDraggingRef.current = true;
+        dragStartRef.current = coords;
+        activeOverlayStartRef.current = { x: cropBox.x + cropBox.width, y: cropBox.y + cropBox.height };
+      } else if (
+        coords.x >= cropBox.x &&
+        coords.x <= cropBox.x + cropBox.width &&
+        coords.y >= cropBox.y &&
+        coords.y <= cropBox.y + cropBox.height
+      ) {
+        setActiveHandle("move");
+        isDraggingRef.current = true;
+        dragStartRef.current = coords;
+        activeOverlayStartRef.current = { x: cropBox.x, y: cropBox.y };
+      }
+      return;
+    }
+
+    if (activeTool !== "add-text") return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -453,24 +535,56 @@ export default function Home() {
   };
 
   const handlePointerMove = (clientX: number, clientY: number) => {
-    if (activeTool !== "add-text" || !isDraggingRef.current || !activeTextId || !dragStartRef.current || !activeOverlayStartRef.current) return;
+    if (!isDraggingRef.current || !dragStartRef.current || !activeOverlayStartRef.current) return;
     const coords = getCanvasCoords(clientX, clientY);
     if (!coords) return;
 
     const dx = coords.x - dragStartRef.current.x;
     const dy = coords.y - dragStartRef.current.y;
 
-    setTextOverlays((prev) =>
-      prev.map((t) =>
-        t.id === activeTextId
-          ? {
-              ...t,
-              x: Math.round(activeOverlayStartRef.current!.x + dx),
-              y: Math.round(activeOverlayStartRef.current!.y + dy),
-            }
-          : t
-      )
-    );
+    if (activeTool === "resize" && cropBox && activeHandle) {
+      const minSize = 25;
+      if (activeHandle === "move") {
+        const nextX = Math.max(0, Math.min(targetWidth - cropBox.width, activeOverlayStartRef.current.x + dx));
+        const nextY = Math.max(0, Math.min(targetHeight - cropBox.height, activeOverlayStartRef.current.y + dy));
+        setCropBox({ ...cropBox, x: nextX, y: nextY });
+      } else if (activeHandle === "top-left") {
+        const newX = Math.max(0, Math.min(cropBox.x + cropBox.width - minSize, activeOverlayStartRef.current.x + dx));
+        const newY = Math.max(0, Math.min(cropBox.y + cropBox.height - minSize, activeOverlayStartRef.current.y + dy));
+        const newW = cropBox.x + cropBox.width - newX;
+        const newH = cropBox.y + cropBox.height - newY;
+        setCropBox({ x: newX, y: newY, width: newW, height: newH });
+      } else if (activeHandle === "top-right") {
+        const newW = Math.max(minSize, Math.min(targetWidth - cropBox.x, activeOverlayStartRef.current.x - cropBox.x + dx));
+        const newY = Math.max(0, Math.min(cropBox.y + cropBox.height - minSize, activeOverlayStartRef.current.y + dy));
+        const newH = cropBox.y + cropBox.height - newY;
+        setCropBox({ ...cropBox, y: newY, width: newW, height: newH });
+      } else if (activeHandle === "bottom-left") {
+        const newX = Math.max(0, Math.min(cropBox.x + cropBox.width - minSize, activeOverlayStartRef.current.x + dx));
+        const newW = cropBox.x + cropBox.width - newX;
+        const newH = Math.max(minSize, Math.min(targetHeight - cropBox.y, activeOverlayStartRef.current.y - cropBox.y + dy));
+        setCropBox({ x: newX, y: cropBox.y, width: newW, height: newH });
+      } else if (activeHandle === "bottom-right") {
+        const newW = Math.max(minSize, Math.min(targetWidth - cropBox.x, activeOverlayStartRef.current.x - cropBox.x + dx));
+        const newH = Math.max(minSize, Math.min(targetHeight - cropBox.y, activeOverlayStartRef.current.y - cropBox.y + dy));
+        setCropBox({ ...cropBox, width: newW, height: newH });
+      }
+      return;
+    }
+
+    if (activeTool === "add-text" && activeTextId) {
+      setTextOverlays((prev) =>
+        prev.map((t) =>
+          t.id === activeTextId
+            ? {
+                ...t,
+                x: Math.round(activeOverlayStartRef.current!.x + dx),
+                y: Math.round(activeOverlayStartRef.current!.y + dy),
+              }
+            : t
+        )
+      );
+    }
   };
 
   const handlePointerUp = () => {
@@ -480,24 +594,92 @@ export default function Home() {
     isDraggingRef.current = false;
     dragStartRef.current = null;
     activeOverlayStartRef.current = null;
+    setActiveHandle(null);
   };
 
   const handleWidthChange = (val: number) => {
-    setTargetWidth(val);
+    const clamped = Math.min(val, 4000);
+    setTargetWidth(clamped);
     if (lockAspect && originalAspect) {
-      setTargetHeight(Math.round(val / originalAspect));
+      setTargetHeight(Math.min(Math.round(clamped / originalAspect), 4000));
     }
   };
 
   const handleHeightChange = (val: number) => {
-    setTargetHeight(val);
+    const clamped = Math.min(val, 4000);
+    setTargetHeight(clamped);
     if (lockAspect && originalAspect) {
-      setTargetWidth(Math.round(val * originalAspect));
+      setTargetWidth(Math.min(Math.round(clamped * originalAspect), 4000));
     }
   };
 
   const handleResizeBlur = () => {
     pushStateToHistory({ targetWidth, targetHeight });
+  };
+
+  const handleCrop = () => {
+    const canvas = canvasRef.current;
+    if (!canvas || !imgRef.current || !cropBox) return;
+
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = cropBox.width;
+    tempCanvas.height = cropBox.height;
+    const tempCtx = tempCanvas.getContext("2d");
+    if (!tempCtx) return;
+
+    if (bgType === "color") {
+      tempCtx.fillStyle = bgColor;
+      tempCtx.fillRect(0, 0, cropBox.width, cropBox.height);
+    }
+
+    tempCtx.drawImage(
+      imgRef.current,
+      cropBox.x,
+      cropBox.y,
+      cropBox.width,
+      cropBox.height,
+      0,
+      0,
+      cropBox.width,
+      cropBox.height
+    );
+
+    const croppedUrl = tempCanvas.toDataURL("image/png");
+    const img = new Image();
+    img.onload = () => {
+      imgRef.current = img;
+      setTargetWidth(img.width);
+      setTargetHeight(img.height);
+      setOriginalAspect(img.width / img.height);
+      
+      const newW = Math.round(img.width * 0.8);
+      const newH = Math.round(img.height * 0.8);
+      const newX = Math.round((img.width - newW) / 2);
+      const newY = Math.round((img.height - newH) / 2);
+      const newCrop = { x: newX, y: newY, width: newW, height: newH };
+      setCropBox(newCrop);
+
+      setTextOverlays([]);
+
+      const newState = {
+        imageFile: image,
+        previewUrl: croppedUrl,
+        bgType,
+        bgColor,
+        textOverlays: [],
+        targetWidth: img.width,
+        targetHeight: img.height,
+        imageElement: img,
+        cropBox: newCrop,
+      };
+      
+      const nextHistory = history.slice(0, historyIndex + 1);
+      setHistory([...nextHistory, newState]);
+      setHistoryIndex(nextHistory.length);
+
+      drawCanvas();
+    };
+    img.src = croppedUrl;
   };
 
   const handleDownload = () => {
@@ -1003,51 +1185,73 @@ export default function Home() {
                         )}
                       </div>
                     )}
-
-                    {/* RESIZE TOOL */}
+                    {/* RESIZE & CROP TOOL */}
                     {activeTool === "resize" && (
-                      <div className="space-y-4 animate-in fade-in">
+                      <div className="space-y-5 animate-in fade-in">
                         <div className="space-y-1">
                           <h3 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
                             <Crop className="h-4.5 w-4.5 text-indigo-500" />
-                            Scale & Resize
+                            Resize & Crop Canvas
                           </h3>
                           <p className="text-xs text-slate-555 dark:text-slate-400 leading-relaxed">
-                            Resize your canvas dimensions dynamically.
+                            Scale your canvas size (Max 4000px) or drag the crop box outline on the preview canvas and click the crop button below.
                           </p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 pt-2">
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block">Width (px)</label>
-                            <input
-                              type="number"
-                              value={targetWidth}
-                              onChange={(e) => handleWidthChange(parseInt(e.target.value) || 0)}
-                              className="w-full p-2.5 text-sm bg-slate-50 dark:bg-zinc-950 border border-slate-250 dark:border-zinc-850 rounded-lg text-slate-800 dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
-                            />
+                        {/* Dimensions Scale Form */}
+                        <div className="space-y-3 pt-2">
+                          <h4 className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block">Canvas Dimensions</h4>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">Width (Max 4000px)</label>
+                              <input
+                                type="number"
+                                value={targetWidth}
+                                max="4000"
+                                onBlur={handleResizeBlur}
+                                onChange={(e) => handleWidthChange(parseInt(e.target.value) || 0)}
+                                className="w-full p-2.5 text-sm bg-slate-50 dark:bg-zinc-950 border border-slate-250 dark:border-zinc-850 rounded-lg text-slate-800 dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
+                              />
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">Height (Max 4000px)</label>
+                              <input
+                                type="number"
+                                value={targetHeight}
+                                max="4000"
+                                onBlur={handleResizeBlur}
+                                onChange={(e) => handleHeightChange(parseInt(e.target.value) || 0)}
+                                className="w-full p-2.5 text-sm bg-slate-50 dark:bg-zinc-950 border border-slate-250 dark:border-zinc-850 rounded-lg text-slate-800 dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
+                              />
+                            </div>
                           </div>
 
-                          <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block">Height (px)</label>
+                          <label className="flex items-center gap-2 text-xs font-semibold text-slate-655 dark:text-slate-300 select-none pt-1 cursor-pointer">
                             <input
-                              type="number"
-                              value={targetHeight}
-                              onChange={(e) => handleHeightChange(parseInt(e.target.value) || 0)}
-                              className="w-full p-2.5 text-sm bg-slate-50 dark:bg-zinc-950 border border-slate-250 dark:border-zinc-850 rounded-lg text-slate-800 dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
+                              type="checkbox"
+                              checked={lockAspect}
+                              onChange={(e) => setLockAspect(e.target.checked)}
+                              className="rounded border-slate-300 dark:border-zinc-800 text-indigo-600 focus:ring-indigo-500"
                             />
-                          </div>
+                            Lock Aspect Ratio ({originalAspect.toFixed(2)})
+                          </label>
                         </div>
 
-                        <label className="flex items-center gap-2 text-xs font-semibold text-slate-655 dark:text-slate-300 select-none pt-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={lockAspect}
-                            onChange={(e) => setLockAspect(e.target.checked)}
-                            className="rounded border-slate-300 dark:border-zinc-800 text-indigo-600 focus:ring-indigo-500"
-                          />
-                          Lock Aspect Ratio ({originalAspect.toFixed(2)})
-                        </label>
+                        {/* Interactive Crop Action */}
+                        <div className="pt-4 border-t border-slate-100 dark:border-zinc-800/80 space-y-3">
+                          <h4 className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block">Interactive Cropping</h4>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Drag the blue crop box handles or move the selection frame directly on the left canvas preview to select your crop area.
+                          </p>
+                          <button
+                            onClick={handleCrop}
+                            className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all active:scale-[0.98] cursor-pointer shadow-sm"
+                          >
+                            <Crop className="h-4 w-4" />
+                            Crop to Selection Box
+                          </button>
+                        </div>
                       </div>
                     )}
                     {/* COMPRESS & SIZE REDUCTION TOOL */}
