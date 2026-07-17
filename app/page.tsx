@@ -737,12 +737,13 @@ export default function Home() {
                     </button>
                     <button
                       onClick={() => setActiveTool("remove-bg")}
-                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold transition-colors cursor-pointer shrink-0 flex items-center justify-center gap-1 ${
                         activeTool === "remove-bg"
                           ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
                           : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white"
                       }`}
                     >
+                      <Sparkles className="h-3 w-3 shrink-0" />
                       Remove BG
                     </button>
                     <button
