@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, MouseEvent, TouchEvent, ChangeEvent } from
 import Script from "next/script";
 import Header from "@/components/Header";
 import Dropzone from "@/components/Dropzone";
+import ToolsCatalog from "@/components/ToolsCatalog";
 import { useLanguage } from "@/components/LanguageContext";
 import { Sparkles, Type, RefreshCw, Crop, Percent, Download, Trash2, Plus, ShieldCheck, FileImage } from "lucide-react";
 
