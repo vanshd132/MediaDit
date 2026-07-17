@@ -18,6 +18,7 @@ export default function RemoveBackgroundPage() {
   const [processedUrl, setProcessedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState<string>("");
+  const [progressPct, setProgressPct] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { t } = useLanguage();
 
@@ -72,6 +73,7 @@ export default function RemoveBackgroundPage() {
     setIsLoading(true);
     setError(null);
     setLoadingStep("Loading AI libraries...");
+    setProgressPct(null);
 
     try {
       const { removeBackground } = await import("@imgly/background-removal");
@@ -81,6 +83,7 @@ export default function RemoveBackgroundPage() {
       const blob = await removeBackground(image, {
         progress: (key: string, current: number, total: number) => {
           const pct = Math.round((current / total) * 100);
+          setProgressPct(pct);
           if (key.includes("fetch")) {
             setLoadingStep(`Downloading AI model: ${pct}%`);
           } else if (key.includes("compute") || key.includes("onnx")) {
@@ -108,6 +111,7 @@ export default function RemoveBackgroundPage() {
     } finally {
       setIsLoading(false);
       setLoadingStep("");
+      setProgressPct(null);
     }
   };
 
@@ -547,10 +551,24 @@ export default function RemoveBackgroundPage() {
                 <div className="flex flex-col items-center gap-3 py-4 text-center">
                   <RefreshCw className="h-8 w-8 text-indigo-500 animate-spin" />
                   <p className="text-sm font-semibold text-slate-800 dark:text-white">
-                    {loadingStep.includes("Loading AI Model") || loadingStep.includes("Downloading AI Model") || loadingStep.includes("loading")
-                      ? t.loadingModel
-                      : t.processing}
+                    {(() => {
+                      const isDownloading = 
+                        loadingStep.toLowerCase().includes("download") || 
+                        loadingStep.toLowerCase().includes("fetch") || 
+                        loadingStep.toLowerCase().includes("library");
+                      
+                      const label = isDownloading ? t.loadingModel : t.processing;
+                      return progressPct !== null ? `${label} (${progressPct}%)` : label;
+                    })()}
                   </p>
+                  {progressPct !== null && (
+                    <div className="w-full max-w-xs sm:max-w-md bg-slate-100 dark:bg-zinc-850 rounded-full h-2 overflow-hidden border border-slate-200/30 dark:border-zinc-800">
+                      <div
+                        className="bg-indigo-600 dark:bg-indigo-500 h-full rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${progressPct}%` }}
+                      />
+                    </div>
+                  )}
                   <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md">
                     {t.firstRunNotice}
                   </p>
