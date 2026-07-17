@@ -146,6 +146,29 @@ export default function Home() {
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const activeOverlayStartRef = useRef<{ x: number; y: number } | null>(null);
 
+  const [compressedSize, setCompressedSize] = useState<number | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !image) return;
+
+    // Force selection outline to hide for accurate blob size calculation
+    drawCanvas(true);
+
+    const ext = targetFormat;
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          setCompressedSize(blob.size);
+        }
+        // Restore outline box drawing
+        drawCanvas(false);
+      },
+      `image/${ext === "png" ? "png" : ext === "jpeg" ? "jpeg" : "webp"}`,
+      ext !== "png" ? quality / 100 : undefined
+    );
+  }, [image, targetFormat, quality, textOverlays, bgType, bgColor, targetWidth, targetHeight]);
+
   const fonts = [
     { value: "sans-serif", label: "Sans-Serif (Inter)" },
     { value: "serif", label: "Serif (Georgia)" },
@@ -1048,7 +1071,7 @@ export default function Home() {
                             className="w-full h-1.5 bg-slate-200 dark:bg-zinc-900 rounded-lg appearance-none cursor-pointer accent-indigo-650"
                           />
                           {targetFormat === "png" && (
-                            <p className="text-[10px] text-amber-600 dark:text-amber-500 leading-relaxed font-semibold">
+                            <p className="text-[10px] text-amber-600 dark:text-amber-400 leading-relaxed font-semibold">
                               ⚠️ Note: PNG format is lossless. Change export format to JPEG or WEBP (below) to see file size savings.
                             </p>
                           )}
@@ -1056,6 +1079,51 @@ export default function Home() {
                             <p className="text-[10px] text-slate-550 dark:text-slate-500 leading-relaxed italic">
                               Setting the slider between 70% and 80% typically offers high size reduction with zero visible loss in image quality.
                             </p>
+                          )}
+                        </div>
+
+                        {/* Size Calculations Display */}
+                        <div className="p-4 bg-slate-50 dark:bg-zinc-950/60 border border-slate-200/60 dark:border-zinc-850/80 rounded-xl space-y-3">
+                          <h4 className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block">Size Comparison</h4>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <span className="text-[10px] text-slate-500 dark:text-slate-500 block">Original Size</span>
+                              <span className="text-sm font-bold text-slate-700 dark:text-slate-250">{formatFileSize(image.size)}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] text-slate-500 dark:text-slate-500 block">New Size (Est.)</span>
+                              <span className="text-sm font-bold text-slate-700 dark:text-slate-250">
+                                {compressedSize ? formatFileSize(compressedSize) : "Calculating..."}
+                              </span>
+                            </div>
+                          </div>
+
+                          {compressedSize && (
+                            <div className="pt-2.5 border-t border-slate-100 dark:border-zinc-800/80">
+                              {(() => {
+                                const diff = image.size - compressedSize;
+                                const pct = Math.round((diff / image.size) * 100);
+                                if (pct > 0) {
+                                  return (
+                                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                      🎉 Est. file size reduction: {pct}% smaller!
+                                    </p>
+                                  );
+                                } else if (pct < 0) {
+                                  return (
+                                    <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                                      ⚠️ Est. file size will increase by {Math.abs(pct)}% (due to format/resizing).
+                                    </p>
+                                  );
+                                } else {
+                                  return (
+                                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                      No size change detected.
+                                    </p>
+                                  );
+                                }
+                              })()}
+                            </div>
                           )}
                         </div>
                       </div>
