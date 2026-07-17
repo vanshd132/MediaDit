@@ -384,6 +384,13 @@ export default function Home() {
         setOriginalAspect(img.width / img.height);
         setPreviewUrl(newUrl);
 
+        const cropW = Math.round(img.width * 0.8);
+        const cropH = Math.round(img.height * 0.8);
+        const cropX = Math.round((img.width - cropW) / 2);
+        const cropY = Math.round((img.height - cropH) / 2);
+        const newCrop = { x: cropX, y: cropY, width: cropW, height: cropH };
+        setCropBox(newCrop);
+
         const newState = {
           imageFile: image,
           previewUrl: newUrl,
@@ -393,6 +400,7 @@ export default function Home() {
           targetWidth: img.width,
           targetHeight: img.height,
           imageElement: img,
+          cropBox: newCrop,
         };
         const nextHistory = history.slice(0, historyIndex + 1);
         setHistory([...nextHistory, newState]);
