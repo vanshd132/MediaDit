@@ -1109,19 +1109,8 @@ export default function Home() {
                                       🎉 Est. file size reduction: {pct}% smaller!
                                     </p>
                                   );
-                                } else if (pct < 0) {
-                                  return (
-                                    <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
-                                      ⚠️ Est. file size will increase by {Math.abs(pct)}% (due to format/resizing).
-                                    </p>
-                                  );
-                                } else {
-                                  return (
-                                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                                      No size change detected.
-                                    </p>
-                                  );
                                 }
+                                return null;
                               })()}
                             </div>
                           )}
