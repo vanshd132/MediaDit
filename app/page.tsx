@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, MouseEvent, TouchEvent, ChangeEvent } from "react";
 import Script from "next/script";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Dropzone from "@/components/Dropzone";
 import ToolsCatalog from "@/components/ToolsCatalog";
@@ -173,7 +174,7 @@ export default function Home() {
   ];
 
   const colors = [
-    "#ffffff", "#000000", "#ef4444", "#f97316", "#eab308", 
+    "#ffffff", "#000000", "#ef4444", "#f97316", "#eab308",
     "#22c55e", "#06b6d4", "#3b82f6", "#6366f1", "#a855f7", "#ec4899"
   ];
 
@@ -462,10 +463,10 @@ export default function Home() {
       prev.map((t) =>
         t.id === activeTextId
           ? {
-              ...t,
-              x: Math.round(activeOverlayStartRef.current!.x + dx),
-              y: Math.round(activeOverlayStartRef.current!.y + dy),
-            }
+            ...t,
+            x: Math.round(activeOverlayStartRef.current!.x + dx),
+            y: Math.round(activeOverlayStartRef.current!.y + dy),
+          }
           : t
       )
     );
@@ -515,7 +516,7 @@ export default function Home() {
     const link = document.createElement("a");
     link.download = `${originalName}-edited.${ext}`;
     link.href = canvas.toDataURL(`image/${ext === "png" ? "png" : ext === "jpeg" ? "jpeg" : "webp"}`, ext !== "png" ? quality / 100 : undefined);
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -571,7 +572,7 @@ export default function Home() {
       <Header />
 
       <main className="flex-1 bg-background transition-colors flex flex-col justify-start">
-        
+
         {!image ? (
           <>
             {/* Compact Hero Section */}
@@ -588,12 +589,28 @@ export default function Home() {
                 </div>
 
                 {/* Direct Upload in Hero */}
-                <div className="max-w-2xl mx-auto pt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="max-w-2xl mx-auto pt-4 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <Dropzone
                     onFileSelected={handleFileSelected}
                     label="Upload an image to start editing instantly"
                     description="Drag & drop or click to upload PNG, JPEG, or WEBP"
                   />
+                  <div className="text-center pt-1.5">
+                    <button
+                      onClick={handleTrySample}
+                      disabled={isSampleLoading}
+                      className="text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors inline-flex items-center gap-1.5 cursor-pointer underline decoration-dotted underline-offset-4 disabled:opacity-50 disabled:pointer-events-none"
+                    >
+                      {isSampleLoading ? (
+                        <>
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin text-indigo-500" />
+                          Loading sample image...
+                        </>
+                      ) : (
+                        "No image? Try a sample."
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </section>
@@ -611,7 +628,7 @@ export default function Home() {
                 <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white text-center mb-10">
                   {t.whyTitle}
                 </h2>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   {/* Privacy */}
                   <div className="space-y-3 text-left">
@@ -649,7 +666,7 @@ export default function Home() {
         ) : (
           /* Active Image Home Page Editor Studio */
           <section className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8 md:py-12 animate-in fade-in duration-300">
-            
+
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                 <FileImage className="h-4 w-4 text-indigo-500" />
@@ -662,10 +679,10 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              
+
               {/* Left Column: Interactive Canvas */}
-              <div className="lg:col-span-7 flex flex-col gap-6">
-                <div className="glass-panel p-4 rounded-2xl flex flex-col items-center justify-center min-h-[400px] bg-slate-50/50 dark:bg-zinc-950/20 border border-slate-200 dark:border-zinc-800/80 overflow-hidden">
+              <div className="lg:col-span-7 flex flex-col gap-4 sticky top-0 lg:relative z-20 bg-background/95 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none py-3 lg:py-0 border-b lg:border-0 border-slate-200/80 dark:border-zinc-850/80">
+                <div className="glass-panel p-2 lg:p-4 rounded-2xl flex flex-col items-center justify-center min-h-[180px] lg:min-h-[400px] bg-slate-50/50 dark:bg-zinc-950/20 border border-slate-200 dark:border-zinc-800/80 overflow-hidden">
                   <div className="relative max-w-full flex justify-center shadow-md border border-slate-200/60 dark:border-zinc-800/50 rounded-xl overflow-hidden">
                     <canvas
                       ref={canvasRef}
@@ -676,9 +693,8 @@ export default function Home() {
                       onTouchStart={(e) => e.touches && e.touches[0] && handlePointerDown(e.touches[0].clientX, e.touches[0].clientY)}
                       onTouchMove={(e) => e.touches && e.touches[0] && handlePointerMove(e.touches[0].clientX, e.touches[0].clientY)}
                       onTouchEnd={handlePointerUp}
-                      className={`max-w-full max-h-[480px] object-contain rounded-lg ${
-                        bgType === "transparent" && targetFormat !== "jpeg" ? "checkerboard-bg" : ""
-                      } ${activeTool === "add-text" ? "cursor-move" : "cursor-default"}`}
+                      className={`max-w-full max-h-[160px] sm:max-h-[280px] lg:max-h-[480px] object-contain rounded-lg ${bgType === "transparent" && targetFormat !== "jpeg" ? "checkerboard-bg" : ""
+                        } ${activeTool === "add-text" ? "cursor-move" : "cursor-default"}`}
                     />
                   </div>
                 </div>
@@ -702,7 +718,7 @@ export default function Home() {
 
               {/* Right Column: Settings Sidebar */}
               <div className="lg:col-span-5 flex flex-col gap-6">
-                
+
                 {/* Tool Selector Tab Bar & History Controls */}
                 <div className="flex bg-slate-100 dark:bg-zinc-950 p-1.5 rounded-xl border border-slate-200/80 dark:border-zinc-850 justify-between items-center overflow-x-auto gap-2">
                   <div className="flex gap-1 shrink-0 border-r border-slate-200 dark:border-zinc-850 pr-2">
@@ -727,52 +743,47 @@ export default function Home() {
                   <div className="flex flex-1 justify-between items-center gap-0.5 overflow-x-auto">
                     <button
                       onClick={() => setActiveTool("none")}
-                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
-                        activeTool === "none"
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${activeTool === "none"
                           ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
                           : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white"
-                      }`}
+                        }`}
                     >
                       View
                     </button>
                     <button
                       onClick={() => setActiveTool("remove-bg")}
-                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold transition-colors cursor-pointer shrink-0 flex items-center justify-center gap-1 ${
-                        activeTool === "remove-bg"
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold transition-colors cursor-pointer shrink-0 flex items-center justify-center gap-1 ${activeTool === "remove-bg"
                           ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
                           : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white"
-                      }`}
+                        }`}
                     >
                       <Sparkles className="h-3 w-3 shrink-0" />
                       Remove BG
                     </button>
                     <button
                       onClick={() => setActiveTool("add-text")}
-                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
-                        activeTool === "add-text"
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${activeTool === "add-text"
                           ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
                           : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white"
-                      }`}
+                        }`}
                     >
                       Add Text
                     </button>
                     <button
                       onClick={() => setActiveTool("resize")}
-                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
-                        activeTool === "resize"
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${activeTool === "resize"
                           ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
                           : "text-slate-500 hover:text-slate-855 dark:text-slate-400 dark:hover:text-white"
-                      }`}
+                        }`}
                     >
                       Resize
                     </button>
                     <button
                       onClick={() => setActiveTool("compress")}
-                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
-                        activeTool === "compress"
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${activeTool === "compress"
                           ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
                           : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white"
-                      }`}
+                        }`}
                     >
                       Reduce Size
                     </button>
@@ -841,21 +852,19 @@ export default function Home() {
                               <div className="grid grid-cols-2 gap-2">
                                 <button
                                   onClick={() => setBgType("transparent")}
-                                  className={`py-1.5 px-3 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
-                                    bgType === "transparent"
+                                  className={`py-1.5 px-3 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${bgType === "transparent"
                                       ? "bg-indigo-600/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400"
                                       : "bg-slate-50 dark:bg-zinc-950/40 border-slate-200 dark:border-transparent text-slate-500 dark:text-slate-400"
-                                  }`}
+                                    }`}
                                 >
                                   Transparent
                                 </button>
                                 <button
                                   onClick={() => setBgType("color")}
-                                  className={`py-1.5 px-3 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
-                                    bgType === "color"
+                                  className={`py-1.5 px-3 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${bgType === "color"
                                       ? "bg-indigo-600/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400"
                                       : "bg-slate-50 dark:bg-zinc-950/40 border-slate-200 dark:border-transparent text-slate-500 dark:text-slate-400"
-                                  }`}
+                                    }`}
                                 >
                                   Solid Color
                                 </button>
@@ -870,11 +879,10 @@ export default function Home() {
                                     <button
                                       key={color}
                                       onClick={() => setBgColor(color)}
-                                      className={`w-6 h-6 rounded-full border border-slate-200 dark:border-white/10 transition-all hover:scale-110 ${
-                                        bgColor === color && bgType === "color"
+                                      className={`w-6 h-6 rounded-full border border-slate-200 dark:border-white/10 transition-all hover:scale-110 ${bgColor === color && bgType === "color"
                                           ? "ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-zinc-950 scale-105"
                                           : ""
-                                      }`}
+                                        }`}
                                       style={{ backgroundColor: color }}
                                     />
                                   ))}
@@ -975,11 +983,10 @@ export default function Home() {
                                       setTextColor(c);
                                       updateActiveText({ color: c });
                                     }}
-                                    className={`w-6 h-6 rounded-full border border-slate-200 dark:border-white/10 transition-all hover:scale-110 ${
-                                      textColor === c
+                                    className={`w-6 h-6 rounded-full border border-slate-200 dark:border-white/10 transition-all hover:scale-110 ${textColor === c
                                         ? "ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-zinc-950 scale-105"
                                         : ""
-                                    }`}
+                                      }`}
                                     style={{ backgroundColor: c }}
                                   />
                                 ))}
@@ -1144,11 +1151,10 @@ export default function Home() {
                               setTargetFormat(fmt as any);
                               setHasManuallyChangedFormat(true);
                             }}
-                            className={`flex-1 py-1 px-2 rounded text-xs font-bold uppercase transition-colors cursor-pointer ${
-                              targetFormat === fmt
+                            className={`flex-1 py-1 px-2 rounded text-xs font-bold uppercase transition-colors cursor-pointer ${targetFormat === fmt
                                 ? "bg-indigo-600 text-white shadow-sm"
                                 : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
-                            }`}
+                              }`}
                           >
                             {fmt}
                           </button>
@@ -1193,8 +1199,13 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#090a0f] py-8 text-center text-xs text-slate-500 dark:text-slate-400 transition-colors">
-        <div className="mx-auto max-w-7xl px-4">
+        <div className="mx-auto max-w-7xl px-4 space-y-2">
           <p>© {new Date().getFullYear()} MediaDit Editor. All rights reserved. 100% Free & client-side.</p>
+          <div className="flex justify-center gap-4 text-slate-450 dark:text-slate-500 font-medium">
+            <Link href="/privacy-policy" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors underline decoration-dotted underline-offset-4">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </footer>
     </>
