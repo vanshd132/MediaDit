@@ -169,6 +169,14 @@ export default function Home() {
     );
   }, [image, targetFormat, quality, textOverlays, bgType, bgColor, targetWidth, targetHeight]);
 
+  useEffect(() => {
+    if (activeTool === "compress") {
+      setTargetFormat("jpeg");
+    } else {
+      setTargetFormat("png");
+    }
+  }, [activeTool]);
+
   const fonts = [
     { value: "sans-serif", label: "Sans-Serif (Inter)" },
     { value: "serif", label: "Serif (Georgia)" },
