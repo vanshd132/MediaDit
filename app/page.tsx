@@ -51,6 +51,24 @@ export default function Home() {
   const [quality, setQuality] = useState(90);
   const [hasManuallyChangedFormat, setHasManuallyChangedFormat] = useState(false);
 
+  const [isSampleLoading, setIsSampleLoading] = useState(false);
+
+  const handleTrySample = async () => {
+    setIsSampleLoading(true);
+    try {
+      const sampleUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80";
+      const response = await fetch(sampleUrl);
+      const blob = await response.blob();
+      const file = new File([blob], "sample-portrait.jpg", { type: "image/jpeg" });
+      handleFileSelected(file);
+    } catch (err) {
+      console.error("Failed to load sample image:", err);
+      alert("Could not load sample image. Please check your internet connection.");
+    } finally {
+      setIsSampleLoading(false);
+    }
+  };
+
   interface HistoryState {
     imageFile: File | null;
     previewUrl: string | null;
