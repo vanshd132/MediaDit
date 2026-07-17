@@ -48,6 +48,7 @@ export default function Home() {
   // Compress & Format States
   const [targetFormat, setTargetFormat] = useState<"png" | "jpeg" | "webp">("png");
   const [quality, setQuality] = useState(90);
+  const [hasManuallyChangedFormat, setHasManuallyChangedFormat] = useState(false);
 
   interface HistoryState {
     imageFile: File | null;
@@ -57,6 +58,7 @@ export default function Home() {
     textOverlays: TextOverlay[];
     targetWidth: number;
     targetHeight: number;
+    imageElement: HTMLImageElement | null;
   }
 
   const [history, setHistory] = useState<HistoryState[]>([]);
@@ -70,6 +72,7 @@ export default function Home() {
     const nextTextOverlays = customState && "textOverlays" in customState ? customState.textOverlays! : [...textOverlays];
     const nextWidth = customState && "targetWidth" in customState ? customState.targetWidth! : targetWidth;
     const nextHeight = customState && "targetHeight" in customState ? customState.targetHeight! : targetHeight;
+    const nextImgElement = customState && "imageElement" in customState ? customState.imageElement! : imgRef.current;
 
     const currentState: HistoryState = {
       imageFile: nextImage,
@@ -79,6 +82,7 @@ export default function Home() {
       textOverlays: nextTextOverlays,
       targetWidth: nextWidth,
       targetHeight: nextHeight,
+      imageElement: nextImgElement,
     };
 
     const nextHistory = history.slice(0, historyIndex + 1);
@@ -99,17 +103,9 @@ export default function Home() {
       setTextOverlays(state.textOverlays);
       setTargetWidth(state.targetWidth);
       setTargetHeight(state.targetHeight);
+      imgRef.current = state.imageElement;
 
-      if (state.previewUrl) {
-        const img = new Image();
-        img.onload = () => {
-          imgRef.current = img;
-          drawCanvas();
-        };
-        img.src = state.previewUrl;
-      } else {
-        imgRef.current = null;
-      }
+      drawCanvas();
     }
   };
 
@@ -126,17 +122,9 @@ export default function Home() {
       setTextOverlays(state.textOverlays);
       setTargetWidth(state.targetWidth);
       setTargetHeight(state.targetHeight);
+      imgRef.current = state.imageElement;
 
-      if (state.previewUrl) {
-        const img = new Image();
-        img.onload = () => {
-          imgRef.current = img;
-          drawCanvas();
-        };
-        img.src = state.previewUrl;
-      } else {
-        imgRef.current = null;
-      }
+      drawCanvas();
     }
   };
 
@@ -168,6 +156,13 @@ export default function Home() {
       ext !== "png" ? quality / 100 : undefined
     );
   }, [image, targetFormat, quality, textOverlays, bgType, bgColor, targetWidth, targetHeight]);
+
+  useEffect(() => {
+    if (!hasManuallyChangedFormat) {
+      const nextFormat = activeTool === "compress" ? "jpeg" : "png";
+      setTargetFormat((prev) => (prev === nextFormat ? prev : nextFormat));
+    }
+  }, [activeTool, hasManuallyChangedFormat]);
 
   const fonts = [
     { value: "sans-serif", label: "Sans-Serif (Inter)" },
@@ -209,7 +204,7 @@ export default function Home() {
   // Redraw canvas whenever states change
   useEffect(() => {
     drawCanvas();
-  }, [image, textOverlays, activeTextId, activeTool, bgType, bgColor, targetWidth, targetHeight]);
+  }, [image, textOverlays, activeTextId, activeTool, bgType, bgColor, targetWidth, targetHeight, targetFormat]);
 
   const handleFileSelected = (file: File) => {
     setImage(file);
@@ -218,6 +213,7 @@ export default function Home() {
     setTextOverlays([]);
     setActiveTextId(null);
     imgRef.current = null;
+    setHasManuallyChangedFormat(false);
 
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     const url = URL.createObjectURL(file);
@@ -238,6 +234,7 @@ export default function Home() {
         textOverlays: [],
         targetWidth: img.width,
         targetHeight: img.height,
+        imageElement: img,
       };
       setHistory([initialState]);
       setHistoryIndex(0);
@@ -262,6 +259,10 @@ export default function Home() {
     // Clear background
     if (bgType === "color") {
       ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, w, h);
+    } else if (targetFormat === "jpeg") {
+      // JPEG does not support transparency, so default to solid white background
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, w, h);
     } else {
       ctx.clearRect(0, 0, w, h);
@@ -305,6 +306,7 @@ export default function Home() {
         ctx.setLineDash([]);
       }
     });
+
   };
 
   const handleRemoveBackground = async () => {
@@ -349,6 +351,7 @@ export default function Home() {
           textOverlays: [...textOverlays],
           targetWidth: img.width,
           targetHeight: img.height,
+          imageElement: img,
         };
         const nextHistory = history.slice(0, historyIndex + 1);
         setHistory([...nextHistory, newState]);
@@ -478,22 +481,26 @@ export default function Home() {
   };
 
   const handleWidthChange = (val: number) => {
-    setTargetWidth(val);
+    const clamped = Math.min(val, 4000);
+    setTargetWidth(clamped);
     if (lockAspect && originalAspect) {
-      setTargetHeight(Math.round(val / originalAspect));
+      setTargetHeight(Math.min(Math.round(clamped / originalAspect), 4000));
     }
   };
 
   const handleHeightChange = (val: number) => {
-    setTargetHeight(val);
+    const clamped = Math.min(val, 4000);
+    setTargetHeight(clamped);
     if (lockAspect && originalAspect) {
-      setTargetWidth(Math.round(val * originalAspect));
+      setTargetWidth(Math.min(Math.round(clamped * originalAspect), 4000));
     }
   };
 
   const handleResizeBlur = () => {
     pushStateToHistory({ targetWidth, targetHeight });
   };
+
+
 
   const handleDownload = () => {
     const canvas = canvasRef.current;
@@ -526,6 +533,7 @@ export default function Home() {
     imgRef.current = null;
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
+    setHasManuallyChangedFormat(false);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -669,7 +677,7 @@ export default function Home() {
                       onTouchMove={(e) => e.touches && e.touches[0] && handlePointerMove(e.touches[0].clientX, e.touches[0].clientY)}
                       onTouchEnd={handlePointerUp}
                       className={`max-w-full max-h-[480px] object-contain rounded-lg ${
-                        bgType === "transparent" ? "checkerboard-bg" : ""
+                        bgType === "transparent" && targetFormat !== "jpeg" ? "checkerboard-bg" : ""
                       } ${activeTool === "add-text" ? "cursor-move" : "cursor-default"}`}
                     />
                   </div>
@@ -729,12 +737,13 @@ export default function Home() {
                     </button>
                     <button
                       onClick={() => setActiveTool("remove-bg")}
-                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold text-center transition-colors cursor-pointer shrink-0 ${
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-[10px] sm:text-xs font-bold transition-colors cursor-pointer shrink-0 flex items-center justify-center gap-1 ${
                         activeTool === "remove-bg"
                           ? "bg-white dark:bg-zinc-800 text-indigo-650 dark:text-indigo-400 shadow-sm"
                           : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white"
                       }`}
                     >
+                      <Sparkles className="h-3 w-3 shrink-0" />
                       Remove BG
                     </button>
                     <button
@@ -997,36 +1006,39 @@ export default function Home() {
                         )}
                       </div>
                     )}
-
                     {/* RESIZE TOOL */}
                     {activeTool === "resize" && (
                       <div className="space-y-4 animate-in fade-in">
                         <div className="space-y-1">
                           <h3 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
                             <Crop className="h-4.5 w-4.5 text-indigo-500" />
-                            Scale & Resize
+                            Scale & Resize Canvas
                           </h3>
                           <p className="text-xs text-slate-555 dark:text-slate-400 leading-relaxed">
-                            Resize your canvas dimensions dynamically.
+                            Scale your canvas width and height dynamically (Max 4000px).
                           </p>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 pt-2">
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block">Width (px)</label>
+                            <label className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block">Width (Max 4000px)</label>
                             <input
                               type="number"
                               value={targetWidth}
+                              max="4000"
+                              onBlur={handleResizeBlur}
                               onChange={(e) => handleWidthChange(parseInt(e.target.value) || 0)}
                               className="w-full p-2.5 text-sm bg-slate-50 dark:bg-zinc-950 border border-slate-250 dark:border-zinc-850 rounded-lg text-slate-800 dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
                             />
                           </div>
 
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block">Height (px)</label>
+                            <label className="text-[10px] font-bold text-slate-400 dark:text-zinc-550 uppercase tracking-widest block">Height (Max 4000px)</label>
                             <input
                               type="number"
                               value={targetHeight}
+                              max="4000"
+                              onBlur={handleResizeBlur}
                               onChange={(e) => handleHeightChange(parseInt(e.target.value) || 0)}
                               className="w-full p-2.5 text-sm bg-slate-50 dark:bg-zinc-950 border border-slate-250 dark:border-zinc-850 rounded-lg text-slate-800 dark:text-white font-semibold focus:outline-none focus:border-indigo-500"
                             />
@@ -1128,7 +1140,10 @@ export default function Home() {
                         {["png", "jpeg", "webp"].map((fmt) => (
                           <button
                             key={fmt}
-                            onClick={() => setTargetFormat(fmt as any)}
+                            onClick={() => {
+                              setTargetFormat(fmt as any);
+                              setHasManuallyChangedFormat(true);
+                            }}
                             className={`flex-1 py-1 px-2 rounded text-xs font-bold uppercase transition-colors cursor-pointer ${
                               targetFormat === fmt
                                 ? "bg-indigo-600 text-white shadow-sm"
