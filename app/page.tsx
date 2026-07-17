@@ -170,11 +170,8 @@ export default function Home() {
   }, [image, targetFormat, quality, textOverlays, bgType, bgColor, targetWidth, targetHeight]);
 
   useEffect(() => {
-    if (activeTool === "compress") {
-      setTargetFormat("jpeg");
-    } else {
-      setTargetFormat("png");
-    }
+    const nextFormat = activeTool === "compress" ? "jpeg" : "png";
+    setTargetFormat((prev) => (prev === nextFormat ? prev : nextFormat));
   }, [activeTool]);
 
   const fonts = [
