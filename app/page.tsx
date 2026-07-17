@@ -48,6 +48,7 @@ export default function Home() {
   // Compress & Format States
   const [targetFormat, setTargetFormat] = useState<"png" | "jpeg" | "webp">("png");
   const [quality, setQuality] = useState(90);
+  const [hasManuallyChangedFormat, setHasManuallyChangedFormat] = useState(false);
 
   interface HistoryState {
     imageFile: File | null;
@@ -157,9 +158,11 @@ export default function Home() {
   }, [image, targetFormat, quality, textOverlays, bgType, bgColor, targetWidth, targetHeight]);
 
   useEffect(() => {
-    const nextFormat = activeTool === "compress" ? "jpeg" : "png";
-    setTargetFormat((prev) => (prev === nextFormat ? prev : nextFormat));
-  }, [activeTool]);
+    if (!hasManuallyChangedFormat) {
+      const nextFormat = activeTool === "compress" ? "jpeg" : "png";
+      setTargetFormat((prev) => (prev === nextFormat ? prev : nextFormat));
+    }
+  }, [activeTool, hasManuallyChangedFormat]);
 
   const fonts = [
     { value: "sans-serif", label: "Sans-Serif (Inter)" },
@@ -210,6 +213,7 @@ export default function Home() {
     setTextOverlays([]);
     setActiveTextId(null);
     imgRef.current = null;
+    setHasManuallyChangedFormat(false);
 
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     const url = URL.createObjectURL(file);
@@ -529,6 +533,7 @@ export default function Home() {
     imgRef.current = null;
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
+    setHasManuallyChangedFormat(false);
   };
 
   const formatFileSize = (bytes: number) => {
@@ -1135,7 +1140,10 @@ export default function Home() {
                         {["png", "jpeg", "webp"].map((fmt) => (
                           <button
                             key={fmt}
-                            onClick={() => setTargetFormat(fmt as any)}
+                            onClick={() => {
+                              setTargetFormat(fmt as any);
+                              setHasManuallyChangedFormat(true);
+                            }}
                             className={`flex-1 py-1 px-2 rounded text-xs font-bold uppercase transition-colors cursor-pointer ${
                               targetFormat === fmt
                                 ? "bg-indigo-600 text-white shadow-sm"
