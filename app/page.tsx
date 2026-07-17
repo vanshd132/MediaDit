@@ -201,7 +201,7 @@ export default function Home() {
   // Redraw canvas whenever states change
   useEffect(() => {
     drawCanvas();
-  }, [image, textOverlays, activeTextId, activeTool, bgType, bgColor, targetWidth, targetHeight]);
+  }, [image, textOverlays, activeTextId, activeTool, bgType, bgColor, targetWidth, targetHeight, targetFormat]);
 
   const handleFileSelected = (file: File) => {
     setImage(file);
@@ -255,6 +255,10 @@ export default function Home() {
     // Clear background
     if (bgType === "color") {
       ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, w, h);
+    } else if (targetFormat === "jpeg") {
+      // JPEG does not support transparency, so default to solid white background
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, w, h);
     } else {
       ctx.clearRect(0, 0, w, h);
@@ -668,7 +672,7 @@ export default function Home() {
                       onTouchMove={(e) => e.touches && e.touches[0] && handlePointerMove(e.touches[0].clientX, e.touches[0].clientY)}
                       onTouchEnd={handlePointerUp}
                       className={`max-w-full max-h-[480px] object-contain rounded-lg ${
-                        bgType === "transparent" ? "checkerboard-bg" : ""
+                        bgType === "transparent" && targetFormat !== "jpeg" ? "checkerboard-bg" : ""
                       } ${activeTool === "add-text" ? "cursor-move" : "cursor-default"}`}
                     />
                   </div>
