@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ToolCard from "./ToolCard";
 import { useLanguage } from "@/components/LanguageContext";
+import { FileText, ArrowRight } from "lucide-react";
 
 export default function ToolsCatalog() {
   const [activeTab, setActiveTab] = useState<"all" | "bg" | "edit" | "format">("all");
@@ -105,6 +106,30 @@ export default function ToolsCatalog() {
           />
         ))}
       </div>
+
+      {/* PDF MediaDit cross-promo */}
+      <a
+        href="https://pdf.mediadit.com?ref=mediadit"
+        rel="noopener"
+        className="group flex flex-col sm:flex-row items-center gap-5 w-full max-w-4xl mx-auto p-6 sm:p-8 rounded-2xl bg-card border border-slate-200 dark:border-zinc-800/80 hover:border-indigo-500/50 dark:hover:border-indigo-500/30 hover:shadow-md transition-all duration-200"
+      >
+        <div className="shrink-0 flex h-14 w-14 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm group-hover:scale-105 transition-transform duration-200">
+          <FileText className="h-7 w-7" />
+        </div>
+        <div className="flex-1 text-center sm:text-left">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+            Need to edit text in a PDF?
+          </h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Fix typos, update dates, and rewrite text inside any PDF — free, private, and right in your browser. Head over to{" "}
+            <span className="font-semibold text-indigo-600 dark:text-indigo-400">PDF MediaDit</span>.
+          </p>
+        </div>
+        <span className="shrink-0 inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 group-hover:gap-2.5 transition-all">
+          Go to PDF MediaDit
+          <ArrowRight className="h-4 w-4" />
+        </span>
+      </a>
     </div>
   );
 }

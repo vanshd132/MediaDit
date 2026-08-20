@@ -1223,6 +1223,9 @@ export default function Home() {
             <Link href="/privacy-policy" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors underline decoration-dotted underline-offset-4">
               Privacy Policy
             </Link>
+            <a href="https://pdf.mediadit.com?ref=mediadit" rel="noopener" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors underline decoration-dotted underline-offset-4">
+              PDF MediaDit
+            </a>
           </div>
         </div>
       </footer>
