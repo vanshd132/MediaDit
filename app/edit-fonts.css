@@ -209,6 +209,22 @@
 }
 
 @font-face {
+  font-family: "MD Inter";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/inter-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Inter";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/inter-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
   font-family: "MD Source Sans 3";
   font-style: italic;
   font-weight: 400 700;
@@ -321,11 +337,699 @@
 }
 
 @font-face {
+  font-family: "MD Nunito Sans";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/nunito-sans-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Nunito Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/nunito-sans-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD PT Sans";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/pt-sans-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD PT Sans";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/pt-sans-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD PT Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/pt-sans-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD PT Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/pt-sans-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Work Sans";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/work-sans-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Work Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/work-sans-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Rubik";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/rubik-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Rubik";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/rubik-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Fira Sans";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/fira-sans-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Fira Sans";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/fira-sans-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Fira Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/fira-sans-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Fira Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/fira-sans-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Ubuntu";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/ubuntu-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Ubuntu";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/ubuntu-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Ubuntu";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/ubuntu-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Ubuntu";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/ubuntu-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Barlow";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/barlow-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Barlow";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/barlow-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Barlow";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/barlow-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Barlow";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/barlow-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD DM Sans";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/dm-sans-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD DM Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/dm-sans-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Manrope";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/manrope-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Mulish";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/mulish-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Mulish";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/mulish-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Josefin Sans";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/josefin-sans-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Josefin Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/josefin-sans-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Quicksand";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/quicksand-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Kanit";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/kanit-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Kanit";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/kanit-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Kanit";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/kanit-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Kanit";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/kanit-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Cabin";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/cabin-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Cabin";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/cabin-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Titillium Web";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/titillium-web-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Titillium Web";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/titillium-web-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Titillium Web";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/titillium-web-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Titillium Web";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/titillium-web-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Exo 2";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/exo-2-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Exo 2";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/exo-2-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Libre Franklin";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/libre-franklin-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Libre Franklin";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/libre-franklin-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD IBM Plex Sans";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/ibm-plex-sans-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/ibm-plex-sans-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Karla";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/karla-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Karla";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/karla-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Space Grotesk";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/space-grotesk-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Outfit";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/outfit-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Figtree";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/figtree-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Figtree";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/figtree-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Archivo";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/archivo-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Archivo";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/archivo-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Heebo";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/heebo-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Hind";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/hind-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Hind";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/hind-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Asap";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/asap-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Asap";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/asap-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Signika";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/signika-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Varela Round";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/varela-round-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Comfortaa";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/comfortaa-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Fredoka";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/fredoka-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Baloo 2";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/baloo-2-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
   font-family: "MD Oswald";
   font-style: normal;
   font-weight: 400 700;
   font-display: block;
   src: url("/fonts/oswald-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Bebas Neue";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/bebas-neue-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Anton";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/anton-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Archivo Black";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/archivo-black-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Barlow Condensed";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/barlow-condensed-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Barlow Condensed";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/barlow-condensed-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Barlow Condensed";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/barlow-condensed-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Barlow Condensed";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/barlow-condensed-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Fjalla One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/fjalla-one-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Teko";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/teko-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Staatliches";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/staatliches-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Passion One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/passion-one-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Passion One";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/passion-one-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Righteous";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/righteous-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Russo One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/russo-one-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Lilita One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/lilita-one-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Bangers";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/bangers-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Luckiest Guy";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/luckiest-guy-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Alfa Slab One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/alfa-slab-one-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Abril Fatface";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/abril-fatface-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD DM Serif Display";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/dm-serif-display-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD DM Serif Display";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/dm-serif-display-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Cinzel";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/cinzel-variable-normal.woff2") format("woff2");
 }
 
 @font-face {
@@ -409,6 +1113,278 @@
 }
 
 @font-face {
+  font-family: "MD Noto Serif";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/noto-serif-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Noto Serif";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/noto-serif-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Source Serif 4";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/source-serif-4-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Source Serif 4";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/source-serif-4-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD EB Garamond";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/eb-garamond-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD EB Garamond";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/eb-garamond-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Libre Baskerville";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/libre-baskerville-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Libre Baskerville";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/libre-baskerville-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Crimson Text";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/crimson-text-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Crimson Text";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/crimson-text-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Crimson Text";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/crimson-text-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Crimson Text";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/crimson-text-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Cormorant Garamond";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/cormorant-garamond-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Cormorant Garamond";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/cormorant-garamond-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Spectral";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/spectral-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Spectral";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/spectral-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Spectral";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/spectral-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Spectral";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/spectral-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Domine";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/domine-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Bitter";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/bitter-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Bitter";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/bitter-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Roboto Slab";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/roboto-slab-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Arvo";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/arvo-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Arvo";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/arvo-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Arvo";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/arvo-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Arvo";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/arvo-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Zilla Slab";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/zilla-slab-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Zilla Slab";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/zilla-slab-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Zilla Slab";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/zilla-slab-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Zilla Slab";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/zilla-slab-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Bree Serif";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/bree-serif-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Old Standard TT";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/old-standard-tt-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Old Standard TT";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/old-standard-tt-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Old Standard TT";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/old-standard-tt-700-normal.woff2") format("woff2");
+}
+
+@font-face {
   font-family: "MD Roboto Mono";
   font-style: italic;
   font-weight: 400 700;
@@ -422,4 +1398,148 @@
   font-weight: 400 700;
   font-display: block;
   src: url("/fonts/roboto-mono-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Source Code Pro";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/source-code-pro-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Source Code Pro";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/source-code-pro-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD IBM Plex Mono";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/ibm-plex-mono-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD IBM Plex Mono";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/ibm-plex-mono-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/ibm-plex-mono-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD IBM Plex Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/ibm-plex-mono-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD JetBrains Mono";
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/jetbrains-mono-variable-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/jetbrains-mono-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Inconsolata";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/inconsolata-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Space Mono";
+  font-style: italic;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/space-mono-400-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Space Mono";
+  font-style: italic;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/space-mono-700-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Space Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/space-mono-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Space Mono";
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url("/fonts/space-mono-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Pacifico";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/pacifico-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Lobster";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/lobster-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Dancing Script";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: block;
+  src: url("/fonts/dancing-script-variable-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Great Vibes";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/great-vibes-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "MD Satisfy";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("/fonts/satisfy-400-normal.woff2") format("woff2");
 }

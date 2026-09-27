@@ -124,64 +124,193 @@ type TessLine = {
   bbox: { x0: number; y0: number; x1: number; y1: number };
 };
 
+function scaledCopy(source: HTMLCanvasElement, scale: number): HTMLCanvasElement {
+  if (Math.abs(scale - 1) < 0.02) return source;
+  const out = makeCanvas(source.width * scale, source.height * scale);
+  const c = out.getContext("2d")!;
+  c.imageSmoothingEnabled = true;
+  c.imageSmoothingQuality = "high";
+  c.drawImage(source, 0, 0, out.width, out.height);
+  return out;
+}
+
+/** OCR every line in the image; boxes come back in `source` pixel coordinates. */
 async function ocrLines(
   source: HTMLCanvasElement,
   onProgress: (p: AnalyzeProgress) => void
-): Promise<{ lines: TessLine[]; scale: number }> {
+): Promise<TessLine[]> {
   const { createWorker, PSM } = await import("tesseract.js");
 
-  // Upscale tiny images / downscale huge ones so OCR sees ~30px glyphs.
+  // Upscaling small images helps OCR with small glyphs, but it hurts large
+  // text: adaptive thresholding works in fixed-size pixel windows, which stop
+  // spanning a whole letter once the letter is blown up. So read at both the
+  // native size and the upscaled size.
   const minDim = Math.min(source.width, source.height);
   const maxDim = Math.max(source.width, source.height);
-  let scale = 1;
-  if (minDim < OCR_TARGET_MIN_DIM) scale = OCR_TARGET_MIN_DIM / minDim;
-  if (maxDim * scale > OCR_MAX_DIM) scale = OCR_MAX_DIM / maxDim;
-  scale = clamp(scale, 0.35, 3);
+  const nativeScale = Math.min(1, OCR_MAX_DIM / maxDim);
+  let upScale = nativeScale;
+  if (minDim < OCR_TARGET_MIN_DIM) upScale = OCR_TARGET_MIN_DIM / minDim;
+  if (maxDim * upScale > OCR_MAX_DIM) upScale = OCR_MAX_DIM / maxDim;
+  upScale = clamp(upScale, 0.35, 3);
+  const native = scaledCopy(source, nativeScale);
+  const upscaled = upScale / nativeScale > 1.15 ? scaledCopy(source, upScale) : null;
 
-  let ocrInput: HTMLCanvasElement = source;
-  if (Math.abs(scale - 1) > 0.02) {
-    ocrInput = makeCanvas(source.width * scale, source.height * scale);
-    const c = ocrInput.getContext("2d")!;
-    c.imageSmoothingEnabled = true;
-    c.imageSmoothingQuality = "high";
-    c.drawImage(source, 0, 0, ocrInput.width, ocrInput.height);
+  // One binarisation never suits every photo either. Tesseract's default global
+  // Otsu threshold loses light text on gradients (white words over a sunset,
+  // where half the sky is as bright as the letters); adaptive Otsu handles that
+  // but can fragment clean scans; sparse mode finds isolated words (captions,
+  // signatures) that page segmentation drops. Run several and merge, so each
+  // pass covers the others' blind spots.
+  type Pass = { img: HTMLCanvasElement; scale: number; thresh: string; psm: string; sparse: boolean };
+  const passes: Pass[] = [
+    { img: native, scale: nativeScale, thresh: "1", psm: PSM.AUTO, sparse: false },
+    { img: native, scale: nativeScale, thresh: "1", psm: PSM.SPARSE_TEXT, sparse: true },
+  ];
+  if (upscaled) {
+    passes.push(
+      { img: upscaled, scale: upScale, thresh: "0", psm: PSM.AUTO, sparse: false },
+      { img: upscaled, scale: upScale, thresh: "1", psm: PSM.AUTO, sparse: false }
+    );
   } else {
-    scale = 1;
+    passes.push({ img: native, scale: nativeScale, thresh: "0", psm: PSM.AUTO, sparse: false });
   }
 
-  const worker = await createWorker("eng", 1, {
-    workerPath: "/tesseract/worker.min.js",
-    logger: (m) => {
-      if (m.status === "recognizing text") {
-        onProgress({ status: "Reading the text…", progress: 0.15 + m.progress * 0.5 });
-      } else if (m.status.includes("loading") || m.status.includes("initializ")) {
-        onProgress({ status: "Loading the OCR engine…", progress: 0.05 });
-      }
-    },
-  });
+  const cores = (typeof navigator !== "undefined" && navigator.hardwareConcurrency) || 2;
+  const poolSize = clamp(cores - 1, 1, 3);
+  const passProgress = passes.map(() => 0);
+  const report = () =>
+    onProgress({
+      status: "Reading the text…",
+      progress: 0.15 + (passProgress.reduce((a, b) => a + b, 0) / passes.length) * 0.5,
+    });
 
+  const currentPass: number[] = [];
+  const makeWorker = (wi: number) =>
+    createWorker("eng", 1, {
+      workerPath: "/tesseract/worker.min.js",
+      logger: (m) => {
+        const pi = currentPass[wi];
+        if (m.status === "recognizing text" && pi !== undefined) {
+          passProgress[pi] = m.progress;
+          report();
+        } else if (m.status.includes("loading") || m.status.includes("initializ")) {
+          onProgress({ status: "Loading the OCR engine…", progress: 0.05 });
+        }
+      },
+    });
+
+  // First worker alone so the language data is fetched & cached once, then the
+  // rest start from cache.
+  onProgress({ status: "Loading the OCR engine…", progress: 0.05 });
+  const workers = [await makeWorker(0)];
   try {
-    await worker.setParameters({ tessedit_pageseg_mode: PSM.AUTO });
-    const { data } = await worker.recognize(
-      ocrInput,
-      {},
-      { blocks: true, text: false }
+    if (poolSize > 1) {
+      workers.push(...(await Promise.all(Array.from({ length: poolSize - 1 }, (_, i) => makeWorker(i + 1)))));
+    }
+
+    const results: { lines: TessLine[]; sparse: boolean }[] = [];
+    let next = 0;
+    await Promise.all(
+      workers.map(async (worker, wi) => {
+        while (next < passes.length) {
+          const i = next++;
+          currentPass[wi] = i;
+          const pass = passes[i];
+          await worker.setParameters({
+            tessedit_pageseg_mode: pass.psm as never,
+            thresholding_method: pass.thresh,
+          } as never);
+          const { data } = await worker.recognize(pass.img, {}, { blocks: true, text: false });
+          const inv = 1 / pass.scale;
+          const lines: TessLine[] = [];
+          for (const block of data.blocks || []) {
+            for (const para of block.paragraphs || []) {
+              for (const line of para.lines || []) {
+                // OCR tacks stray symbol "words" onto line ends (an image edge
+                // read as "|", a dash as "="); they carry no editable text but
+                // stretch the box over background. Trim them word by word.
+                const words = (line.words || []).filter((w) => (w.text || "").trim());
+                let a = 0;
+                let z = words.length - 1;
+                while (a <= z && !alnumCount(words[a].text)) a++;
+                while (z >= a && !alnumCount(words[z].text)) z--;
+                let text: string;
+                let conf = line.confidence;
+                let b = line.bbox;
+                if (words.length && a <= z) {
+                  const kept = words.slice(a, z + 1);
+                  text = kept.map((w) => w.text.trim()).join(" ");
+                  if (a > 0 || z < words.length - 1) {
+                    conf = kept.reduce((s, w) => s + w.confidence, 0) / kept.length;
+                    b = {
+                      x0: Math.min(...kept.map((w) => w.bbox.x0)),
+                      y0: Math.min(...kept.map((w) => w.bbox.y0)),
+                      x1: Math.max(...kept.map((w) => w.bbox.x1)),
+                      y1: Math.max(...kept.map((w) => w.bbox.y1)),
+                    };
+                  }
+                } else {
+                  text = (line.text || "").replace(/\s+/g, " ").trim();
+                }
+                if (!text) continue;
+                lines.push({
+                  text,
+                  confidence: conf,
+                  bbox: { x0: b.x0 * inv, y0: b.y0 * inv, x1: b.x1 * inv, y1: b.y1 * inv },
+                });
+              }
+            }
+          }
+          results[i] = { lines, sparse: pass.sparse };
+          passProgress[i] = 1;
+          report();
+        }
+      })
     );
 
-    const lines: TessLine[] = [];
-    for (const block of data.blocks || []) {
-      for (const para of block.paragraphs || []) {
-        for (const line of para.lines || []) {
-          const text = (line.text || "").replace(/\s+/g, " ").trim();
-          if (!text) continue;
-          lines.push({ text, confidence: line.confidence, bbox: line.bbox });
-        }
-      }
-    }
-    return { lines, scale };
+    return mergeOcrPasses(results);
   } finally {
-    await worker.terminate();
+    await Promise.all(workers.map((w) => w.terminate()));
   }
+}
+
+const alnumCount = (s: string) => (s.match(/[\p{L}\p{N}]/gu) || []).length;
+
+/**
+ * Combine lines from several OCR passes. The same line usually comes back from
+ * more than one pass - sometimes whole, sometimes fragmented ("TR" + "NO
+ * REGRET") - so rank every candidate by confidence x amount of real text and
+ * greedily keep the best one for each patch of the image.
+ */
+function mergeOcrPasses(passes: { lines: TessLine[]; sparse: boolean }[]): TessLine[] {
+  const cands: { line: TessLine; score: number }[] = [];
+  for (const pass of passes) {
+    for (const line of pass.lines) {
+      const n = alnumCount(line.text);
+      if (n === 0) continue;
+      if (n === 1 && line.confidence < 85) continue;
+      // sparse mode happily "reads" texture, so hold it to a higher bar; and
+      // its boxes are looser, so on a tie prefer page segmentation's line
+      if (pass.sparse && line.confidence < 60) continue;
+      cands.push({ line, score: (line.confidence / 100) * n * (pass.sparse ? 0.9 : 1) });
+    }
+  }
+  cands.sort((a, b) => b.score - a.score);
+
+  const area = (b: TessLine["bbox"]) => Math.max(1, (b.x1 - b.x0) * (b.y1 - b.y0));
+  const kept: TessLine[] = [];
+  for (const { line } of cands) {
+    const b = line.bbox;
+    const clash = kept.some((k) => {
+      const ix = Math.min(b.x1, k.bbox.x1) - Math.max(b.x0, k.bbox.x0);
+      const iy = Math.min(b.y1, k.bbox.y1) - Math.max(b.y0, k.bbox.y0);
+      if (ix <= 0 || iy <= 0) return false;
+      return (ix * iy) / Math.min(area(b), area(k.bbox)) > 0.4;
+    });
+    if (!clash) kept.push(line);
+  }
+  // reading order
+  return kept.sort((a, b) => a.bbox.y0 - b.bbox.y0 || a.bbox.x0 - b.bbox.x0);
 }
 
 /* ------------------------------------------------------------------ */
@@ -207,17 +336,24 @@ interface InkInfo {
   boldness: number;
   /** mean slant of vertical strokes, radians — used for italic detection */
   slant: number;
+  /** alpha (0-255) at which candidate renders match this scan's binarisation */
+  alphaCut: number;
 }
 
 /**
  * Work out which pixels in a crop are glyph and which are page, plus the
  * colours involved. The background estimate deliberately only looks at the
  * *border* ring of the crop so glyph pixels can never pollute it.
+ *
+ * `inside` (crop coordinates) limits where ink may be found: the crop is
+ * padded to see clean background, and on tightly set text that padding reaches
+ * into the neighbouring lines, whose glyphs must not count as this line's.
  */
 function measureInk(
   data: Uint8ClampedArray,
   cw: number,
-  ch: number
+  ch: number,
+  inside?: { x0: number; y0: number; x1: number; y1: number }
 ): InkInfo | null {
   // --- background: median of the border ring -------------------------------
   const bgR: number[] = [];
@@ -251,13 +387,67 @@ function measureInk(
   const bg_ = median(bgG);
   const bb = median(bgB);
 
+  // Photos (sky, gradients) change colour across one line box, so compare each
+  // pixel against a local background: per-row medians of the left and right
+  // border strips, blended across the crop. A strip that is wildly off the
+  // global estimate is probably a glyph touching the crop edge — ignore it.
+  const sideBg = (x0: number): Float32Array => {
+    const out = new Float32Array(ch * 3);
+    const sw = Math.min(3, cw);
+    for (let y = 0; y < ch; y++) {
+      const r: number[] = [];
+      const g: number[] = [];
+      const b: number[] = [];
+      for (let yy = Math.max(0, y - 3); yy <= Math.min(ch - 1, y + 3); yy++) {
+        for (let k = 0; k < sw; k++) {
+          const x = x0 < 0 ? cw - 1 - k : k;
+          const i = (yy * cw + x) * 4;
+          r.push(data[i]);
+          g.push(data[i + 1]);
+          b.push(data[i + 2]);
+        }
+      }
+      out[y * 3] = median(r);
+      out[y * 3 + 1] = median(g);
+      out[y * 3 + 2] = median(b);
+    }
+    return out;
+  };
+  const leftBg = sideBg(0);
+  const rightBg = sideBg(-1);
+  for (let y = 0; y < ch; y++) {
+    const q = y * 3;
+    const dl = colorDist(leftBg[q], leftBg[q + 1], leftBg[q + 2], br, bg_, bb);
+    const dr = colorDist(rightBg[q], rightBg[q + 1], rightBg[q + 2], br, bg_, bb);
+    const lr = colorDist(leftBg[q], leftBg[q + 1], leftBg[q + 2], rightBg[q], rightBg[q + 1], rightBg[q + 2]);
+    if (lr <= 110) continue;
+    const [from, to] = dl > dr ? [rightBg, leftBg] : [leftBg, rightBg];
+    to[q] = from[q];
+    to[q + 1] = from[q + 1];
+    to[q + 2] = from[q + 2];
+  }
+
   // --- ink: everything far enough from the background ----------------------
   // Otsu-style threshold on the distance-from-background histogram.
   const dist = new Float32Array(cw * ch);
   let maxDist = 0;
+  const ix0 = inside ? Math.max(0, Math.floor(inside.x0)) : 0;
+  const iy0 = inside ? Math.max(0, Math.floor(inside.y0)) : 0;
+  const ix1 = inside ? Math.min(cw - 1, Math.ceil(inside.x1)) : cw - 1;
+  const iy1 = inside ? Math.min(ch - 1, Math.ceil(inside.y1)) : ch - 1;
   for (let p = 0; p < cw * ch; p++) {
+    const x = p % cw;
+    const y = (p / cw) | 0;
+    if (x < ix0 || x > ix1 || y < iy0 || y > iy1) continue;
     const i = p * 4;
-    const d = colorDist(data[i], data[i + 1], data[i + 2], br, bg_, bb);
+    const t = cw > 1 ? x / (cw - 1) : 0;
+    const q = y * 3;
+    const d = colorDist(
+      data[i], data[i + 1], data[i + 2],
+      leftBg[q] + (rightBg[q] - leftBg[q]) * t,
+      leftBg[q + 1] + (rightBg[q + 1] - leftBg[q + 1]) * t,
+      leftBg[q + 2] + (rightBg[q + 2] - leftBg[q + 2]) * t
+    );
     dist[p] = d;
     if (d > maxDist) maxDist = d;
   }
@@ -265,10 +455,13 @@ function measureInk(
 
   const bins = 64;
   const hist = new Float64Array(bins);
-  for (let p = 0; p < dist.length; p++) {
-    hist[Math.min(bins - 1, Math.floor((dist[p] / maxDist) * bins))]++;
+  let total = 0;
+  for (let y = iy0; y <= iy1; y++) {
+    for (let x = ix0; x <= ix1; x++) {
+      hist[Math.min(bins - 1, Math.floor((dist[y * cw + x] / maxDist) * bins))]++;
+      total++;
+    }
   }
-  let total = dist.length;
   let sumAll = 0;
   for (let b = 0; b < bins; b++) sumAll += b * hist[b];
   let sumB = 0;
@@ -291,6 +484,33 @@ function measureInk(
   }
   const threshold = Math.max(22, ((best + 0.5) / bins) * maxDist);
 
+  // OCR line boxes are sometimes bloated (they swallow sky/noise or reach
+  // into the next line). Keep only the band of rows around the densest row,
+  // stopping at a clear horizontal gap — the gap between two lines.
+  const rowCnt = new Int32Array(ch);
+  let peakRow = 0;
+  for (let y = 0; y < ch; y++) {
+    let c = 0;
+    for (let x = 0; x < cw; x++) if (dist[y * cw + x] >= threshold) c++;
+    rowCnt[y] = c;
+    if (c > rowCnt[peakRow]) peakRow = y;
+  }
+  const rowMin = Math.max(1, rowCnt[peakRow] * 0.02);
+  let bandTop = peakRow;
+  let bandBot = peakRow;
+  for (let dir = -1; dir <= 1; dir += 2) {
+    let gap = 0;
+    for (let y = peakRow + dir; y >= 0 && y < ch; y += dir) {
+      if (rowCnt[y] >= rowMin) {
+        if (dir < 0) bandTop = y;
+        else bandBot = y;
+        gap = 0;
+      } else {
+        const tol = Math.max(1, Math.round((bandBot - bandTop + 1) * 0.12));
+        if (++gap > tol) break;
+      }
+    }
+  }
   const mask = new Uint8Array(cw * ch);
   let count = 0;
   let fr = 0;
@@ -301,7 +521,7 @@ function measureInk(
   let inkY0 = ch;
   let inkX1 = -1;
   let inkY1 = -1;
-  for (let y = 0; y < ch; y++) {
+  for (let y = bandTop; y <= bandBot; y++) {
     for (let x = 0; x < cw; x++) {
       const p = y * cw + x;
       if (dist[p] < threshold) continue;
@@ -333,14 +553,17 @@ function measureInk(
   let cg = 0;
   let cb = 0;
   let cn = 0;
+  let cd = 0;
   for (let p = 0; p < mask.length; p++) {
     if (!mask[p] || dist[p] < coreCut) continue;
     const i = p * 4;
     cr += data[i];
     cg += data[i + 1];
     cb += data[i + 2];
+    cd += dist[p];
     cn++;
   }
+  const coreDist = cn ? cd / cn : maxDist;
   const fgHex =
     cn > 4 ? toHex(cr / cn, cg / cn, cb / cn) : toHex(fr / fw, fg / fw, fb / fw);
 
@@ -438,6 +661,9 @@ function measureInk(
     bg: toHex(br, bg_, bb),
     boldness,
     slant,
+    // renders must be binarised at the same relative level as the scan, or a
+    // candidate's strokes come out a pixel fatter or thinner than the real ones
+    alphaCut: clamp(threshold / Math.max(threshold, coreDist), 0.2, 0.75) * 255,
   };
 }
 
@@ -454,6 +680,12 @@ const BOLD_THRESHOLD = 0.19;
 /** Stem lean, radians, above which italic candidates are considered. Real
  *  italics sit around 0.20-0.26 rad, so this leaves plenty of headroom. */
 const SLANT_THRESHOLD = 0.08;
+/** Match score below which a line's font is searched for in the whole library
+ *  rather than just the image-wide shortlist. The true face of a line scores
+ *  0.75-1.0; a lookalike standing in for it typically scores 0.6-0.67. */
+const WEAK_MATCH = 0.75;
+/** Ink height above which lines are font-matched on a scaled-down copy. */
+const MATCH_MAX_INK_H = 44;
 
 interface CandMask {
   mask: Uint8Array;
@@ -511,7 +743,8 @@ function renderCandidateMask(
   font: EditFont,
   bold: boolean,
   italic: boolean,
-  size: number
+  size: number,
+  alphaCut = 96
 ): CandMask {
   const fakeItalic = italic && !font.hasItalic;
   const fontSpec = `${italic && font.hasItalic ? "italic " : ""}${
@@ -569,7 +802,7 @@ function renderCandidateMask(
   let y1 = -1;
   let count = 0;
   for (let p = 0; p < w * h; p++) {
-    if (img.data[p * 4 + 3] > 96) {
+    if (img.data[p * 4 + 3] > alphaCut) {
       mask[p] = 1;
       count++;
       const x = p % w;
@@ -609,7 +842,7 @@ function renderCandidateMask(
 /**
  * Intersection-over-union of the candidate against the original ink, after
  * aligning left edge to left edge and baseline to baseline, plus an extra
- * (ddx, ddy) nudge so the caller can hunt for the best sub-pixel placement.
+ * (ddx, ddy) nudge so the caller can hunt for the best placement.
  */
 function scoreAgainst(
   ink: InkInfo,
@@ -641,8 +874,7 @@ function scoreAgainst(
     }
   }
   if (union === 0) return 0;
-  const iou = inter / union;
-
+  const overlap = inter / union;
   // Raw overlap alone is a biased judge. A heavier weight always covers more of
   // the (slightly dilated) scanned mask, so a marginally undersized candidate
   // can buy back overlap by going bold. Stroke thickness and cap height are
@@ -653,7 +885,7 @@ function scoreAgainst(
   const candCap = Math.max(1, cand.baseline - cand.y0);
   const capPenalty = Math.abs(candCap - inkCap) / inkCap;
   const strokePenalty = Math.abs(cand.stroke - ink.boldness);
-  return iou - 1.5 * strokePenalty - 0.8 * Math.min(1, capPenalty);
+  return overlap - 1.5 * strokePenalty - 0.8 * Math.min(1, capPenalty);
 }
 
 interface FontFit {
@@ -681,12 +913,16 @@ function guessSize(text: string, ink: InkInfo, font: EditFont, bold: boolean, it
   ctx.font = `${italic && font.hasItalic ? "italic " : ""}${
     bold ? "700" : "400"
   } ${probe}px ${font.family}`;
-  const probeW = ctx.measureText(text).width;
+  const m = ctx.measureText(text);
+  // ink extents, not advance width: side bearings and each face's own cap /
+  // ascender height matter - thin serif strokes at text sizes lose most of
+  // their overlap from a 2% size error
+  const probeW = m.actualBoundingBoxLeft + m.actualBoundingBoxRight || m.width;
   if (!probeW || !isFinite(probeW)) return null;
+  const probeAscent = m.actualBoundingBoxAscent > 0 ? m.actualBoundingBoxAscent : probe * 0.72;
 
   const byWidth = (ink.inkW / probeW) * probe;
-  // cap height is ~0.70-0.72 em for almost every text face
-  const byHeight = (ink.baseline - ink.inkY) / 0.72;
+  const byHeight = ((ink.baseline - ink.inkY) / probeAscent) * probe;
   // short strings have unreliable widths; long strings have unreliable heights
   // (a line with no ascenders/capitals reads far too short)
   const letters = text.replace(/[^A-Za-z0-9]/g, "").length;
@@ -702,10 +938,24 @@ function coarseFit(
   bold: boolean,
   italic: boolean
 ): FontFit | null {
-  const size = guessSize(text, ink, font, bold, italic);
+  let size = guessSize(text, ink, font, bold, italic);
   if (size === null) return null;
-  const cand = renderCandidateMask(text, font, bold, italic, size);
+  let cand = renderCandidateMask(text, font, bold, italic, size, ink.alphaCut);
   if (!cand.count) return null;
+  // Overlap is extremely peaky in size - thin strokes at text sizes go from a
+  // perfect match to half that 1% off - so snap the size until the rendered
+  // ink is exactly as wide as the original's. Every candidate gets its best
+  // size before families are compared. (Short strings: width is unreliable.)
+  if (text.replace(/[^A-Za-z0-9]/g, "").length > 3) {
+    for (let it = 0; it < 2; it++) {
+      const ratio = ink.inkW / Math.max(1, cand.x1 - cand.x0 + 1);
+      if (Math.abs(ratio - 1) < 0.002 || ratio < 0.8 || ratio > 1.25) break;
+      const next = renderCandidateMask(text, font, bold, italic, size * ratio, ink.alphaCut);
+      if (!next.count) break;
+      size *= ratio;
+      cand = next;
+    }
+  }
   const renderedW = cand.x1 - cand.x0 + 1;
   return {
     fontId: font.id,
@@ -729,7 +979,7 @@ function refineFit(text: string, ink: InkInfo, start: FontFit): FontFit {
   let best = { ...start };
 
   const evaluate = (size: number, dx: number, dy: number) => {
-    const cand = renderCandidateMask(text, font, best.bold, best.italic, size);
+    const cand = renderCandidateMask(text, font, best.bold, best.italic, size, ink.alphaCut);
     if (!cand.count) return null;
     const renderedW = cand.x1 - cand.x0 + 1;
     return {
@@ -776,8 +1026,11 @@ function refineFit(text: string, ink: InkInfo, start: FontFit): FontFit {
  */
 function decideWeight(text: string, ink: InkInfo, fit: FontFit): boolean {
   const font = fontById(fit.fontId);
+  // single-weight faces (Anton, Bebas...) are heavy by design; a synthesized
+  // bold on top of them never matches anything real
+  if (!font.hasBold) return false;
   const probe = (bold: boolean) => {
-    const c = renderCandidateMask(text, font, bold, fit.italic, fit.size);
+    const c = renderCandidateMask(text, font, bold, fit.italic, fit.size, ink.alphaCut);
     return c.count ? Math.abs(c.stroke - ink.boldness) : Infinity;
   };
   const regular = probe(false);
@@ -798,7 +1051,7 @@ function sweepSize(text: string, ink: InkInfo, start: FontFit): FontFit {
   let best = start;
 
   const evaluate = (size: number, dx: number, dy: number) => {
-    const cand = renderCandidateMask(text, font, start.bold, start.italic, size);
+    const cand = renderCandidateMask(text, font, start.bold, start.italic, size, ink.alphaCut);
     if (!cand.count) return null;
     const renderedW = cand.x1 - cand.x0 + 1;
     return {
@@ -846,7 +1099,7 @@ function bestFontFor(
 
   const coarse: FontFit[] = [];
   for (const font of families) {
-    for (const bold of boldGuesses) {
+    for (const bold of font.hasBold ? boldGuesses : [false]) {
       for (const italic of italics) {
         const fit = coarseFit(text, ink, font, bold, italic);
         if (fit) coarse.push(fit);
@@ -1065,16 +1318,22 @@ export async function analyzeImage(
   onProgress: (p: AnalyzeProgress) => void
 ): Promise<TextRegion[]> {
   onProgress({ status: "Starting the OCR engine…", progress: 0.02 });
-  const { lines, scale } = await ocrLines(source, onProgress);
+  // fetch the typefaces while OCR runs instead of before it
+  const uprightFonts = preloadEditFonts();
+  const lines = await ocrLines(source, onProgress);
 
   onProgress({ status: "Measuring the text…", progress: 0.7 });
 
   const sctx = source.getContext("2d", { willReadFrequently: true })!;
-  const inv = 1 / scale;
 
   interface Pending {
     line: TessLine;
+    /** ink measured at full resolution - used for placement and erasing */
     ink: InkInfo;
+    /** ink the font matcher works on (a downscaled copy for huge text) */
+    mink: InkInfo;
+    /** mink pixels per image pixel */
+    mscale: number;
     crop: Box;
     text: string;
   }
@@ -1084,10 +1343,10 @@ export async function analyzeImage(
     if (line.confidence < MIN_CONFIDENCE) continue;
     if (pending.length >= MAX_REGIONS) break;
 
-    const bx = line.bbox.x0 * inv;
-    const by = line.bbox.y0 * inv;
-    const bw = (line.bbox.x1 - line.bbox.x0) * inv;
-    const bh = (line.bbox.y1 - line.bbox.y0) * inv;
+    const bx = line.bbox.x0;
+    const by = line.bbox.y0;
+    const bw = line.bbox.x1 - line.bbox.x0;
+    const bh = line.bbox.y1 - line.bbox.y0;
     if (bw < 4 || bh < 4) continue;
 
     // pad generously so descenders/accents and clean background are included
@@ -1100,20 +1359,57 @@ export async function analyzeImage(
     if (cw < 5 || ch < 5) continue;
 
     const crop = sctx.getImageData(cx, cy, cw, ch);
-    const ink = measureInk(crop.data, cw, ch);
+    // OCR boxes are usually tight but can shave accents/descenders; allow a
+    // little slack around them, never the full padding
+    const slackX = bh * 0.15;
+    const slackY = bh * 0.2;
+    const inside = {
+      x0: bx - cx - slackX,
+      y0: by - cy - slackY,
+      x1: bx + bw - cx + slackX,
+      y1: by + bh - cy + slackY,
+    };
+    const ink = measureInk(crop.data, cw, ch, inside);
     if (!ink) continue;
 
-    pending.push({ line, ink, crop: { x: cx, y: cy, w: cw, h: ch }, text: line.text });
+    // Matching cost grows with glyph area and big poster text gains nothing
+    // from the extra pixels, so fit very large lines on a scaled-down copy.
+    let mink = ink;
+    let mscale = 1;
+    if (ink.inkH > MATCH_MAX_INK_H) {
+      const s = MATCH_MAX_INK_H / ink.inkH;
+      const full = makeCanvas(cw, ch);
+      full.getContext("2d")!.putImageData(crop, 0, 0);
+      const small = scaledCopy(full, s);
+      const sd = small.getContext("2d", { willReadFrequently: true })!
+        .getImageData(0, 0, small.width, small.height);
+      const k = small.width / cw;
+      const m = measureInk(sd.data, small.width, small.height, {
+        x0: inside.x0 * k,
+        y0: inside.y0 * k,
+        x1: inside.x1 * k,
+        y1: inside.y1 * k,
+      });
+      if (m) {
+        mink = m;
+        mscale = k;
+      }
+    }
+
+    pending.push({ line, ink, mink, mscale, crop: { x: cx, y: cy, w: cw, h: ch }, text: line.text });
   }
 
   onProgress({ status: "Identifying the fonts…", progress: 0.78 });
-
+  await uprightFonts;
+  if (pending.some((p) => p.ink.slant > SLANT_THRESHOLD)) {
+    await preloadEditFonts({ italic: true });
+  }
   // Documents almost always use one or two typefaces. Elect the family on the
   // best few lines, then only trial the winners per line — much faster and far
   // more consistent than picking a different font for every line.
   const electors = pending
     .filter((p) => p.text.replace(/[^A-Za-z]/g, "").length >= 6)
-    .sort((a, b) => b.ink.count - a.ink.count)
+    .sort((a, b) => b.mink.count - a.mink.count)
     .slice(0, 5);
 
   const tally = new Map<string, number>();
@@ -1121,10 +1417,10 @@ export async function analyzeImage(
     for (const font of EDIT_FONTS) {
       const fit = coarseFit(
         e.text,
-        e.ink,
+        e.mink,
         font,
-        e.ink.boldness > BOLD_THRESHOLD,
-        e.ink.slant > SLANT_THRESHOLD
+        font.hasBold && e.mink.boldness > BOLD_THRESHOLD,
+        e.mink.slant > SLANT_THRESHOLD
       );
       if (fit) tally.set(font.id, (tally.get(font.id) || 0) + fit.score);
     }
@@ -1135,14 +1431,31 @@ export async function analyzeImage(
   // real documents, screenshots and UI text.
   const CORE = ["arimo", "tinos", "cousine", "carlito", "caladea"];
   const shortlistIds = new Set<string>(CORE);
-  for (const [id] of ranked.slice(0, 3)) shortlistIds.add(id);
+  for (const [id] of ranked.slice(0, 5)) shortlistIds.add(id);
   const shortlist = [...shortlistIds].map(fontById);
 
   const regions: TextRegion[] = [];
   for (let i = 0; i < pending.length; i++) {
-    const { ink, crop, text, line } = pending[i];
+    const { ink, mink, mscale, crop, text, line } = pending[i];
+    let found = bestFontFor(text, mink, shortlist);
+    // Posters and designed images mix typefaces line by line (a Bebas
+    // headline over a serif tagline), which the document-wide election can't
+    // anticipate. If the shortlist can't reproduce this line well, try the
+    // whole library for it, and let later lines reuse whatever wins.
+    if (!found || found.score < WEAK_MATCH) {
+      const others = EDIT_FONTS.filter((f) => !shortlistIds.has(f.id));
+      const wide = bestFontFor(text, mink, others);
+      if (wide && (!found || wide.score > found.score)) {
+        found = wide;
+        shortlistIds.add(wide.fontId);
+        shortlist.push(fontById(wide.fontId));
+      }
+    }
+    if (found && mscale !== 1) {
+      found = { ...found, size: found.size / mscale, dx: found.dx / mscale, dy: found.dy / mscale };
+    }
     const fit =
-      bestFontFor(text, ink, shortlist) ||
+      found ||
       ({
         fontId: shortlist[0].id,
         bold: ink.boldness > BOLD_THRESHOLD,
@@ -1206,9 +1519,7 @@ export function drawRegionText(
   if (!text) return;
 
   ctx.save();
-  ctx.font = `${region.italic && font.hasItalic ? "italic " : ""}${
-    region.bold ? "700" : "400"
-  } ${region.fontSize}px ${font.family}`;
+  ctx.font = regionFontSpec(region);
   ctx.fillStyle = region.color;
   ctx.textBaseline = "alphabetic";
   ctx.textAlign = "left";
@@ -1248,20 +1559,39 @@ export function composite(
   for (const r of dirty) drawRegionText(ctx, r);
 }
 
-/** Make sure every font we might draw with is actually loaded into the page. */
-export async function preloadEditFonts() {
+/** The exact CSS font shorthand a region is drawn with. */
+export function regionFontSpec(region: TextRegion, px = region.fontSize): string {
+  const font = fontById(region.fontId);
+  return `${region.italic && font.hasItalic ? "italic " : ""}${
+    region.bold ? "700" : "400"
+  } ${px}px ${font.family}`;
+}
+
+/** Load the faces the given regions need (no-op for ones already loaded). */
+export async function ensureRegionFonts(regions: TextRegion[]) {
+  if (typeof document === "undefined" || !document.fonts) return;
+  const specs = new Set(regions.map((r) => regionFontSpec(r, 64)));
+  await Promise.all([...specs].map((s) => document.fonts.load(s).catch(() => {})));
+}
+
+/**
+ * Load the faces the matcher renders with. Upright faces are needed for every
+ * image; italics (~40% of the bytes) only when some line actually slants.
+ */
+export async function preloadEditFonts(opts: { italic?: boolean } = {}) {
   if (typeof document === "undefined" || !document.fonts) return;
   const jobs: Promise<unknown>[] = [];
   for (const f of EDIT_FONTS) {
-    for (const weight of ["400", "700"]) {
-      jobs.push(document.fonts.load(`${weight} 64px ${f.family}`).catch(() => {}));
-      if (f.hasItalic) {
-        jobs.push(
-          document.fonts.load(`italic ${weight} 64px ${f.family}`).catch(() => {})
-        );
+    const weights = f.hasBold ? ["400", "700"] : ["400"];
+    for (const weight of weights) {
+      if (opts.italic) {
+        if (f.hasItalic) {
+          jobs.push(document.fonts.load(`italic ${weight} 64px ${f.family}`).catch(() => {}));
+        }
+      } else {
+        jobs.push(document.fonts.load(`${weight} 64px ${f.family}`).catch(() => {}));
       }
     }
   }
   await Promise.all(jobs);
-  await document.fonts.ready;
 }

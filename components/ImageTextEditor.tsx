@@ -21,12 +21,12 @@ import {
   Check,
 } from "lucide-react";
 import Dropzone from "@/components/Dropzone";
-import { EDIT_FONTS } from "@/lib/editFonts";
+import { EDIT_FONTS, FONT_CLASS_LABELS, FontClass } from "@/lib/editFonts";
 import "@/app/edit-fonts.css";
 import {
   analyzeImage,
   composite,
-  preloadEditFonts,
+  ensureRegionFonts,
   TextRegion,
 } from "@/lib/imageTextEngine";
 
@@ -62,7 +62,17 @@ export default function ImageTextEditor() {
   }, []);
 
   useEffect(() => {
-    if (phase === "ready") repaint(regions);
+    if (phase !== "ready") return;
+    // a region switched to a face that hasn't been fetched yet (e.g. italic)
+    // would otherwise draw in a fallback font until the next repaint
+    let cancelled = false;
+    repaint(regions);
+    ensureRegionFonts(regions.filter((r) => r.edited)).then(() => {
+      if (!cancelled) repaint(regions);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [regions, phase, repaint]);
 
   /** keep the HTML overlay boxes aligned with the on-screen canvas size */
@@ -116,8 +126,7 @@ export default function ImageTextEditor() {
       }
 
       setPhase("analyzing");
-      setProgress({ status: "Loading fonts…", progress: 0.01 });
-      await preloadEditFonts();
+      setProgress({ status: "Starting…", progress: 0.01 });
 
       const found = await analyzeImage(orig, setProgress);
       if (!found.length) {
@@ -322,14 +331,22 @@ export default function ImageTextEditor() {
                 onChange={(e) => patch(active.id, { fontId: e.target.value })}
                 className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 focus:border-indigo-500 rounded-lg py-2 px-3 text-sm text-slate-900 dark:text-white outline-none"
               >
-                {EDIT_FONTS.map((f) => (
-                  <option
-                    key={f.id}
-                    value={f.id}
+                {(Object.keys(FONT_CLASS_LABELS) as FontClass[]).map((cls) => (
+                  <optgroup
+                    key={cls}
+                    label={FONT_CLASS_LABELS[cls]}
                     className="bg-white dark:bg-[#090a0f]"
                   >
-                    {f.label}
-                  </option>
+                    {EDIT_FONTS.filter((f) => f.cls === cls).map((f) => (
+                      <option
+                        key={f.id}
+                        value={f.id}
+                        className="bg-white dark:bg-[#090a0f]"
+                      >
+                        {f.label}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>
@@ -337,6 +354,7 @@ export default function ImageTextEditor() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => patch(active.id, { bold: !active.bold })}
+                aria-pressed={active.bold}
                 className={`flex-1 inline-flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
                   active.bold
                     ? "bg-indigo-600 border-indigo-600 text-white"
@@ -347,6 +365,7 @@ export default function ImageTextEditor() {
               </button>
               <button
                 onClick={() => patch(active.id, { italic: !active.italic })}
+                aria-pressed={active.italic}
                 className={`flex-1 inline-flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer ${
                   active.italic
                     ? "bg-indigo-600 border-indigo-600 text-white"
