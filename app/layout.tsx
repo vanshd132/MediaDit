@@ -15,11 +15,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://mediadit.com"),
   title: "MediaDit | Free Online Image Tools & Background Remover",
-  description: "Free, serverless client-side image editor. Remove backgrounds with AI, add text, resize, crop, and convert images instantly with complete privacy.",
+  description: "Free, serverless client-side image editor. Remove backgrounds with AI, edit text in images, add text, resize, crop, and convert images instantly with complete privacy.",
   keywords: [
     "Free Online Photo Editor",
     "Remove Background Instantly",
+    "Edit Text in Image Free",
     "Add Text to Image Online",
     "Client-Side Background Remover",
     "Image Converter PNG to WEBP",
@@ -29,8 +31,8 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "MediaDit | Free Online Image Tools",
-    description: "Remove background, add text, crop, resize, and convert images. 100% offline, free, and secure.",
-    url: "https://mediadit.vercel.app",
+    description: "Remove background, edit text in images, add text, crop, resize, and convert images. 100% offline, free, and secure.",
+    url: "https://mediadit.com",
     siteName: "MediaDit",
     type: "website",
   },
