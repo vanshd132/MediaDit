@@ -29,6 +29,16 @@ export default function ToolsCatalog() {
       colorTheme: "cyan" as const,
     },
     {
+      title: "Edit Text in Image",
+      description:
+        "Change words that are already inside a photo or screenshot. The background is rebuilt and the font is matched, so it doesn't look edited.",
+      href: "/edit-text",
+      icon: "textCursor" as const,
+      badge: "Beta",
+      badgeType: "ai" as const,
+      colorTheme: "rose" as const,
+    },
+    {
       title: t.cardConvertTitle,
       description: t.cardConvertDesc,
       href: "/convert",
@@ -67,7 +77,7 @@ export default function ToolsCatalog() {
   const filteredTools = tools.filter((tool) => {
     if (activeTab === "all") return true;
     if (activeTab === "bg") return tool.colorTheme === "indigo";
-    if (activeTab === "edit") return tool.colorTheme === "cyan";
+    if (activeTab === "edit") return tool.colorTheme === "cyan" || tool.colorTheme === "rose";
     if (activeTab === "format") return tool.colorTheme === "emerald" || tool.colorTheme === "amber";
     return true;
   });

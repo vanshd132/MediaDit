@@ -7,7 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
   const baseUrl = `${protocol}://${host}`;
 
-  const baseRoutes = ["", "/remove-background", "/add-text", "/convert", "/resize", "/compress", "/privacy-policy"];
+  const baseRoutes = ["", "/remove-background", "/edit-text", "/add-text", "/convert", "/resize", "/compress", "/privacy-policy"];
   const languages = ["en", "es", "fr", "de", "pt", "hi"];
 
   const entries: MetadataRoute.Sitemap = [];

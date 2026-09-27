@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sparkles, Type, RefreshCw, Crop, ShieldCheck, Sun, Moon, Grid, Percent, Globe } from "lucide-react";
+import { Sparkles, Type, RefreshCw, Crop, ShieldCheck, Sun, Moon, Grid, Percent, Globe, TextCursorInput } from "lucide-react";
 import { useLanguage } from "@/components/LanguageContext";
 
 export default function Header() {
@@ -30,6 +30,7 @@ export default function Header() {
 
   const links = [
     { href: "/remove-background", label: t.removeBg, icon: Sparkles },
+    { href: "/edit-text", label: "Edit Text", icon: TextCursorInput },
     { href: "/add-text", label: t.addText, icon: Type },
     { href: "/convert", label: t.convert, icon: RefreshCw },
     { href: "/resize", label: t.resize, icon: Crop },

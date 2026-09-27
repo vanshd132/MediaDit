@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, Type, RefreshCw, Crop, Percent } from "lucide-react";
+import { Sparkles, Type, RefreshCw, Crop, Percent, TextCursorInput } from "lucide-react";
 
 const iconMap = {
   sparkles: Sparkles,
@@ -9,6 +9,7 @@ const iconMap = {
   refresh: RefreshCw,
   crop: Crop,
   percent: Percent,
+  textCursor: TextCursorInput,
 };
 
 interface ToolCardProps {
@@ -18,7 +19,7 @@ interface ToolCardProps {
   icon: keyof typeof iconMap;
   badge?: string;
   badgeType?: "ai" | "new" | "offline";
-  colorTheme?: "indigo" | "cyan" | "emerald" | "amber";
+  colorTheme?: "indigo" | "cyan" | "emerald" | "amber" | "rose";
 }
 
 export default function ToolCard({
@@ -55,6 +56,10 @@ export default function ToolCard({
     amber: {
       tileBg: "bg-amber-500 text-white",
       hoverBorder: "group-hover:border-amber-500/50 dark:group-hover:border-amber-500/30",
+    },
+    rose: {
+      tileBg: "bg-rose-500 text-white",
+      hoverBorder: "group-hover:border-rose-500/50 dark:group-hover:border-rose-500/30",
     },
   };
 
